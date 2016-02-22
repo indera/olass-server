@@ -1,0 +1,4 @@
+-r base.pip
+
+Flask-DebugToolbar==0.10.0
+pyOpenSSL==0.15.1
