@@ -1,5 +1,5 @@
 .DS_Store
-.vagrant
+.vagrant/
 *.pyc
 *.pyo
 *.swp
@@ -21,3 +21,12 @@ nosexcover-*
 .coveralls.yml
 coverage.json
 pylint.out
+
+# Developer's files
+/app/deploy/settings.conf
+/app/deploy/*/fabric.py
+/app/deploy/*/settings.conf
+/app/deploy/*/virtualhost.conf
+
+app/ssl/server.key
+app/ssl/server.crt
