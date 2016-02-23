@@ -8,7 +8,7 @@ CREATE TABLE version (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO Version (version_id, version_stamp, version_info)
-   VALUES('001', now(), 'New table: Version')
+   VALUES('001', now(), 'New table: version')
 ;
 
 

@@ -1,5 +1,12 @@
-This schema change adds tables for application
+This schema change adds tables for the application.
 
-show tables from olass;
-
-
+(olass@localhost) [olass]> show tables;
++-----------------+
+| Tables_in_olass |
++-----------------+
+| linkage         |
+| partner         |
+| rule            |
+| version         |
++-----------------+
+4 rows in set (0.00 sec)

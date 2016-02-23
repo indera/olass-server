@@ -1,11 +1,12 @@
 
--- Added the `Version` table
+-- Added the `version` table
 
-desc Version;
-+----------+--------------+------+-----+-------------------+-----------------------------+
-| Field    | Type         | Null | Key | Default           | Extra                       |
-+----------+--------------+------+-----+-------------------+-----------------------------+
-| verID    | varchar(255) | NO   | PRI |                   |                             |
-| verStamp | timestamp    | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
-| verInfo  | text         | NO   |     | NULL              |                             |
-+----------+--------------+------+-----+-------------------+-----------------------------+
+(olass@localhost) [olass]> desc version;
++---------------+--------------+------+-----+-------------------+-----------------------------+
+| Field         | Type         | Null | Key | Default           | Extra                       |
++---------------+--------------+------+-----+-------------------+-----------------------------+
+| version_id    | varchar(255) | NO   | PRI |                   |                             |
+| version_stamp | timestamp    | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| version_info  | text         | NO   |     | NULL              |                             |
++---------------+--------------+------+-----+-------------------+-----------------------------+
+3 rows in set (0.00 sec)
