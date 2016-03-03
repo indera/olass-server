@@ -20,7 +20,7 @@ CREATE TABLE partner (
 
 CREATE TABLE rule (
     rule_id integer unsigned NOT NULL AUTO_INCREMENT,
-    rule_code char(5) NOT NULL,
+    rule_code varchar (255) NOT NULL,
     rule_description varchar(255) NOT NULL,
     rule_added_at datetime NOT NULL,
  PRIMARY KEY (rule_id),
