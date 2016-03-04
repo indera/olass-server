@@ -28,12 +28,17 @@ CREATE TABLE rule (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 ;
 
+/*
+Note:
+    - the 36-character uuid is stored as 32/2 = 16 binary
+    - the 64-character sha256 string is stored as 64/2 = 32 binary
+*/
 CREATE TABLE linkage (
     linkage_id bigint unsigned NOT NULL AUTO_INCREMENT,
     partner_id integer unsigned NOT NULL,
     rule_id integer unsigned NOT NULL,
-    linkage_uuid char(36) NOT NULL,
-    linkage_hash char(64) NOT NULL,
+    linkage_uuid binary(16) NOT NULL,
+    linkage_hash binary(32) NOT NULL,
     linkage_added_at datetime NOT NULL,
  PRIMARY KEY (linkage_id),
  KEY (linkage_uuid),

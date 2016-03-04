@@ -28,7 +28,7 @@ VALUES
 INSERT INTO linkage
     (partner_id, rule_id, linkage_uuid, linkage_hash, linkage_added_at)
 SELECT
-    partner_id, rule_id, UUID(), SHA2('First-Last-DOB-Zip', 256), NOW()
+    partner_id, rule_id, ordered_uuid(UUID()), UNHEX(SHA2('First-Last-DOB-Zip', 256)), NOW()
 FROM
     partner, rule
 WHERE
@@ -39,7 +39,7 @@ WHERE
 INSERT INTO linkage
     (partner_id, rule_id, linkage_uuid, linkage_hash, linkage_added_at)
 SELECT
-    partner_id, rule_id, UUID(), SHA2('Last-First-DOB-Zip', 256), NOW()
+    partner_id, rule_id, ordered_uuid(UUID()), UNHEX(SHA2('Last-First-DOB-Zip', 256)), NOW()
 FROM
     partner, rule
 WHERE

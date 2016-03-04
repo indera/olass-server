@@ -1,6 +1,6 @@
 This schema change adds tables for the application.
 
-(olass@localhost) [olass]> show tables;
+(olass@localhost) [olass]> SHOW TABLES;
 +-----------------+
 | Tables_in_olass |
 +-----------------+
@@ -11,7 +11,8 @@ This schema change adds tables for the application.
 +-----------------+
 4 rows in set (0.00 sec)
 
-(olass@localhost) [olass]> select * from partner;
+-- show the list of partners
+(olass@localhost) [olass]> SELECT * FROM partner;
 +------------+--------------+-----------------------------------+---------------------+
 | partner_id | partner_code | partner_description               | partner_added_at    |
 +------------+--------------+-----------------------------------+---------------------+
@@ -25,7 +26,8 @@ This schema change adds tables for the application.
 +------------+--------------+-----------------------------------+---------------------+
 
 
-(olass@localhost) [olass]> select * from rule;
+-- show rules used by the OLASS-client
+(olass@localhost) [olass]> SELECT * FROM rule;
 +---------+---------------+-------------------------------------------------------------------+---------------------+
 | rule_id | rule_code     | rule_description                                                  | rule_added_at       |
 +---------+---------------+-------------------------------------------------------------------+---------------------+
@@ -38,11 +40,28 @@ This schema change adds tables for the application.
 5 rows in set (0.00 sec)
 
 
-(olass@localhost) [olass]> select * from linkage;
-+------------+------------+---------+--------------------------------------+------------------------------------------------------------------+---------------------+
-| linkage_id | partner_id | rule_id | linkage_uuid                         | linkage_hash                                                     | linkage_added_at    |
-+------------+------------+---------+--------------------------------------+------------------------------------------------------------------+---------------------+
-|          1 |          1 |       1 | bcd83374-e186-11e5-b61b-d818ed5f1137 | 448907dc613e5adc1b83320223f60c354b47a42cb41316390e6d345a096403d6 | 2016-03-03 16:27:31 |
-|          2 |          1 |       2 | bcd83e32-e186-11e5-b61b-d818ed5f1137 | 8a8fb351b694324091a9f37c74d1122330696dfe1b12ceddc2422f80c9d50e6f | 2016-03-03 16:27:31 |
-+------------+------------+---------+--------------------------------------+------------------------------------------------------------------+---------------------+
+-- Find all linkages originating from 'UF'
+(olass@localhost) [olass]> SELECT
+    linkage_id, partner_code, rule_code, HEX(linkage_uuid), HEX(linkage_hash)
+FROM
+    linkage
+    JOIN partner USING (partner_id)
+    JOIN rule USING (rule_id)
+WHERE
+    partner_code = 'UF'
+;
++------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
+| linkage_id | partner_code | rule_code | HEX(linkage_uuid)                | HEX(linkage_hash)                                                |
++------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
+|          1 | UF           | F-L-D-Z   | 11E5E2210F1A5BE2BFBA005056B43375 | 448907DC613E5ADC1B83320223F60C354B47A42CB41316390E6D345A096403D6 |
+|          2 | UF           | L-F-D-Z   | 11E5E2210F1CB57CBFBA005056B43375 | 8A8FB351B694324091A9F37C74D1122330696DFE1B12CEDDC2422F80C9D50E6F |
++------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
 2 rows in set (0.00 sec)
+
+-- Find the 'OneFLorida ID' by providing a hash of the patient data
+(olass@localhost) [olass]> SELECT HEX(linkage_uuid) FROM linkage WHERE linkage_hash = UNHEX(SHA2('First-Last-DOB-Zip', 256));
++----------------------------------+
+| hex(linkage_uuid)                |
++----------------------------------+
+| 11E5E2210F1A5BE2BFBA005056B43375 |
++----------------------------------+
