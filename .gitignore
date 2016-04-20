@@ -4,6 +4,7 @@
 *.pyo
 *.swp
 *.swo
+.cache/
 private/
 venv/
 htmlcov/
