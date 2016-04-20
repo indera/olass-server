@@ -4,7 +4,7 @@ ORM for "linkage" table
 @authors:
     Andrei Sura <sura.andrei@gmail.com>
 """
-
+import binascii
 from olass import utils
 from olass.models.crud_mixin import CRUDMixin
 from olass.models.partner_entity import PartnerEntity
@@ -63,9 +63,14 @@ class LinkageEntity(db.Model, CRUDMixin):
 
     def __repr__(self):
         """ Return a friendly object representation """
+
         return "<LinkageEntity(linkage_id: {0.id}, "\
-            "partner_id: {0.partner_id}" \
+            "partner_id: {0.partner_id}, " \
             "rule_id: {0.rule_id}, "\
-            "linkage_uuid: {0.linkage_uuid}, "\
-            "linkage_hash: {0.linkage_hash}, "\
-            "linkage_addded_at: {0.linkage_addded_at})>".format(self)
+            "linkage_uuid: {1}, "\
+            "linkage_hash: {2}, "\
+            "linkage_addded_at: {0.linkage_addded_at})>".format(
+                self,
+                binascii.hexlify(self.linkage_uuid),
+                binascii.hexlify(self.linkage_hash)
+            )

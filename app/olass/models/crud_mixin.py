@@ -16,7 +16,7 @@ db.session.save(my, commit=False)
 found = MyTableEntity.get_by_id(1) is not None
 """
 
-from redidropper.main import db
+from olass.main import db
 
 class CRUDMixin(object):
     """ Helper class flask-sqlalchemy entities """
@@ -27,7 +27,7 @@ class CRUDMixin(object):
     @classmethod
     def get_by_id(cls, id):
         if any(
-            (isinstance(id, basestring) and id.isdigit(),
+            (isinstance(id, str) and id.isdigit(),
              isinstance(id, (int, float))),
         ):
             return cls.query.get(int(id))
