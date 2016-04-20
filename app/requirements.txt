@@ -1,0 +1,21 @@
+
+Flask
+Flask-DebugToolbar
+Flask-Login
+Flask-OAuthlib
+Flask-SQLAlchemy
+Flask-Testing
+SQLAlchemy
+pyOpenSSL
+pytest
+pytest-cov
+pytz
+
+
+# utility functions in tasks.py 
+invoke
+colorama
+
+# Flask-Mail
+# Flask-Principal
+# MySQL-python
