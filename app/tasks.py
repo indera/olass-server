@@ -105,7 +105,7 @@ def clean():
     """
     Remove all generated files.
     """
-    run("rm -f **/*.pyc")
+    run('find . -type f -name "*.pyc" -print | xargs rm -f')
     run('rm -rf htmlcov/ .coverage pylint.out')
 
 
