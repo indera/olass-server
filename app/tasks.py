@@ -7,9 +7,11 @@ Goal: store shortcuts to common tasks
 
 """
 
-import os
+# import os
 import sys
 from invoke import run, task
+from tasks_utils import ask_yes_no, get_db_name, check_db_exists
+# from invoke.exceptions import Failure
 import colorama as col
 # @see https://pypi.python.org/pypi/colorama
 col.init(autoreset=True)
@@ -31,17 +33,52 @@ def prep_develop():
     run('pip freeze')
 
 
-def get_dir_for_prefix(prefix):
-    """
-    Add the current username as a sub-folder to the specified 'prefix' folder
-    """
-    result = run('whoami', hide='stdout')
-    suffix = result.stdout.strip() if result.ok else 'whoami'
-    path = os.path.join(prefix, suffix)
+@task
+def init_db(db_name=None):
+    """ Create the database """
+    db_name = db_name if db_name is not None else get_db_name()
+    exists = check_db_exists(db_name)
 
-    if not os.path.isdir(path):
-        sys.exit("Do you really intend to use path [{}]?".format(path))
-    return path
+    if exists:
+        print(col.Fore.RED +
+              "The database '{}' already exists "
+              "(name retreived from schema/000/upgrade.sql)".format(db_name))
+        sys.exit(1)
+
+    if not ask_yes_no("Do you want to create the database '{}'?"
+                      .format(db_name)):
+        print(col.Fore.YELLOW + "Aborting at user request.")
+        sys.exit(1)
+
+    run('sudo mysql    < schema/000/upgrade.sql')
+    run('sudo mysql {} < schema/001/upgrade.sql'.format(db_name))
+    run('sudo mysql {} < schema/002/upgrade.sql'.format(db_name))
+    run('sudo mysql {} < schema/002/data.sql'.format(db_name))
+
+
+@task
+def reset_db(db_name=None):
+    """ Drop all tables, Create empty tables, and add data. """
+    db_name = db_name if db_name is not None else get_db_name()
+
+    if not ask_yes_no("Do you want to erase the '{}' database"
+                      " and re-create it?".format(db_name)):
+        print(col.Fore.YELLOW + "Aborting at user request.")
+        sys.exit(1)
+
+    run('sudo mysql    < schema/000/downgrade.sql')
+    run('sudo mysql    < schema/000/upgrade.sql')
+    run('sudo mysql {} < schema/001/upgrade.sql'.format(db_name))
+    run('sudo mysql {} < schema/002/upgrade.sql'.format(db_name))
+    run('sudo mysql {} < schema/002/data.sql'.format(db_name))
+
+
+@task
+def go():
+    """
+    Start the web application using the WSGI webserver provided by Flask
+    """
+    run('python run.py')
 
 
 @task
@@ -53,7 +90,14 @@ def test():
 @task
 def coverage():
     """ Create coverage report """
-    run('coverage run --source tests/ -m py.test')
+    run('PYTHONPATH="." py.test --tb=short -s --cov olass '
+        ' --cov-report term-missing --cov-report html tests/')
+
+
+@task
+def lint():
+    # run("which pylint || sudo pip install pylint")
+    run("pylint -f parseable olass | tee pylint.out")
 
 
 @task
@@ -61,7 +105,8 @@ def clean():
     """
     Remove all generated files.
     """
-    run("rm **/*.pyc")
+    run("rm -f **/*.pyc")
+    run('rm -rf htmlcov/ .coverage pylint.out')
 
 
 if __name__ == '__main__':
