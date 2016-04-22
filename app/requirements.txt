@@ -6,9 +6,9 @@ Flask-OAuthlib
 Flask-SQLAlchemy
 Flask-Testing
 SQLAlchemy
+mysqlclient
 pyOpenSSL
 pytest
-pytest-cov
 pytz
 
 
@@ -18,4 +18,3 @@ colorama
 
 # Flask-Mail
 # Flask-Principal
-# MySQL-python
