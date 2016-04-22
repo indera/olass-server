@@ -41,7 +41,7 @@ CREATE TABLE linkage (
     linkage_hash binary(32) NOT NULL,
     linkage_added_at datetime NOT NULL,
  PRIMARY KEY (linkage_id),
- KEY (linkage_uuid),
+ UNIQUE KEY (linkage_uuid, linkage_hash),
  KEY (linkage_hash),
  KEY (linkage_added_at),
  CONSTRAINT `fk_linkage_partner_id` FOREIGN KEY (partner_id) REFERENCES partner (partner_id),

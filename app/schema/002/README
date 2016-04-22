@@ -31,14 +31,12 @@ This schema change adds tables for the application.
 +---------+---------------+-------------------------------------------------------------------+---------------------+
 | rule_id | rule_code     | rule_description                                                  | rule_added_at       |
 +---------+---------------+-------------------------------------------------------------------+---------------------+
-|       1 | F-L-D-Z       | First Name + Last Name + DOB + Zip                                | 2016-03-03 16:17:44 |
-|       2 | L-F-D-Z       | Last Name + First Name + DOB + Zip                                | 2016-03-03 16:17:44 |
-|       3 | F-L-D-C       | First Name + Last Name + DOB + City                               | 2016-03-03 16:17:44 |
-|       4 | L-F-D-C       | Last Name + First Name + DOB + City                               | 2016-03-03 16:17:44 |
-|       5 | 3F-3L-SF-SL-D | Three Letter FN + Three Letter LN + Soundex FN + Soundex LN + DOB | 2016-03-03 16:17:44 |
+|       1 | F_L_D_Z       | First Name + Last Name + DOB + Zip                                | 2016-04-22 11:18:07 |
+|       2 | L_F_D_Z       | Last Name + First Name + DOB + Zip                                | 2016-04-22 11:18:07 |
+|       3 | F_L_D_C       | First Name + Last Name + DOB + City                               | 2016-04-22 11:18:07 |
+|       4 | L_F_D_C       | Last Name + First Name + DOB + City                               | 2016-04-22 11:18:07 |
+|       5 | 3F_3L_SF_SL_D | Three Letter FN + Three Letter LN + Soundex FN + Soundex LN + DOB | 2016-04-22 11:18:07 |
 +---------+---------------+-------------------------------------------------------------------+---------------------+
-5 rows in set (0.00 sec)
-
 
 -- Find all linkages originating from 'UF'
 (olass@localhost) [olass]> SELECT
@@ -53,10 +51,9 @@ WHERE
 +------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
 | linkage_id | partner_code | rule_code | HEX(linkage_uuid)                | HEX(linkage_hash)                                                |
 +------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
-|          1 | UF           | F-L-D-Z   | 11E5E2210F1A5BE2BFBA005056B43375 | 448907DC613E5ADC1B83320223F60C354B47A42CB41316390E6D345A096403D6 |
-|          2 | UF           | L-F-D-Z   | 11E5E2210F1CB57CBFBA005056B43375 | 8A8FB351B694324091A9F37C74D1122330696DFE1B12CEDDC2422F80C9D50E6F |
+|          1 | UF           | F_L_D_Z   | 11E6089D6AEBB0D4AC3C9B18A7FCF9ED | 448907DC613E5ADC1B83320223F60C354B47A42CB41316390E6D345A096403D6 |
+|          2 | UF           | L_F_D_Z   | 11E6089D6AEBCAF6AC3C9B18A7FCF9ED | 8A8FB351B694324091A9F37C74D1122330696DFE1B12CEDDC2422F80C9D50E6F |
 +------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
-2 rows in set (0.00 sec)
 
 -- Find the 'OneFLorida ID' by providing a hash of the patient data
 (olass@localhost) [olass]> SELECT HEX(linkage_uuid) FROM linkage WHERE linkage_hash = UNHEX(SHA2('First-Last-DOB-Zip', 256));
