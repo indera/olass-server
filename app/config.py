@@ -61,6 +61,7 @@ class DefaultConfig(object):
 
 class DebugConfig(DefaultConfig):
     """ Extend the default config with options useful during debugging """
+    LOG_LEVEL = logging.DEBUG
     DEBUG = True
     DEBUG_TB_ENABLED = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
