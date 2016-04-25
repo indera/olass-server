@@ -45,6 +45,10 @@ class LinkageEntity(db.Model, CRUDMixin):
     partner = db.relationship(PartnerEntity, uselist=False, lazy='joined')
 
     @staticmethod
+    def short_hash(val):
+        return val[:8]
+
+    @staticmethod
     def load_paginated(per_page=25, page_num=1):
         """
         Helper for formating a list of linkages
