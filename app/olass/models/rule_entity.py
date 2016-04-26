@@ -46,6 +46,12 @@ class RuleEntity(db.Model, CRUDMixin):
     rule_added_at = db.Column('rule_added_at', db.DateTime,
                               nullable=False)
 
+    @staticmethod
+    def get_rules_cache():
+        rules = RuleEntity.query.all()
+        result = {rule.rule_code: rule.id for rule in rules}
+        return result
+
     def __repr__(self):
         """ Return a friendly object representation """
         return "<RuleEntity(rule_id: {0.id}, "\

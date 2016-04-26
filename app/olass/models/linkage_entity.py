@@ -65,6 +65,50 @@ class LinkageEntity(db.Model, CRUDMixin):
         items = map(item_from_entity, pagination.items)
         return items, pagination.pages
 
+    def friendly_uuid(self):
+        return binascii.hexlify(self.linkage_uuid).decode()
+
+    def friendly_hash(self):
+        return binascii.hexlify(self.linkage_hash).decode()
+
+    @staticmethod
+    def get_chunks_cache(chunks):
+        """
+        From the list [x, y, z] of chunks return
+        a dictionary like:
+
+            {x: LinkageEntity, y: LinkageEntity, z: None}
+        """
+        bin_chunks = [binascii.unhexlify(chunk.encode('utf-8'))
+                      for chunk in chunks]
+        links = LinkageEntity.query.filter(
+            LinkageEntity.linkage_hash.in_(bin_chunks)).all()
+        links_cache = {link.friendly_hash(): link for link in links}
+
+        result = {}
+        for chunk in chunks:
+            result[chunk] = links_cache.get(chunk, None)
+
+        return result
+
+    @staticmethod
+    def get_distinct_uuids_for_chunks(chunks_cache):
+        """
+        From the list [x, y, z] of chunks return the set(uuid_1, uuid_2)
+        if the database contains the following rows:
+            x => uuid_1
+            y => uuid_1
+            z => uuid_2
+
+        """
+        result = set()
+
+        for link in chunks_cache.values():
+            if link:
+                result.add(link.friendly_uuid())
+
+        return result
+
     def __repr__(self):
         """ Return a friendly object representation """
 

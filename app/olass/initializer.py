@@ -5,12 +5,12 @@ Goal: Load settings, configure logging, load application routing
   Andrei Sura <sura.andrei@gmail.com>
 """
 
+import config
 import os
 import sys
 import ssl
-import logging
-import config
-from logging import Formatter
+# import logging
+# from logging import Formatter
 # from logging.handlers import RotatingFileHandler
 
 
@@ -86,7 +86,8 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
         else:
             SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DATABASE_PATH
     else:
-        SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/{}' \
+        # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{}:{}@{}/{}?charset=utf8' \
+        SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{}:{}@{}/{}?charset=utf8' \
             .format(app.config['DB_USER'],
                     app.config['DB_PASS'],
                     app.config['DB_HOST'],
@@ -118,15 +119,13 @@ def _configure_logging(app):
     @see http://flask.pocoo.org/docs/0.10/errorhandling/
     """
     log_level = app.config['LOG_LEVEL']
-    handler = logging.StreamHandler()
-    # handler = RotatingFileHandler('olass.log', maxBytes=99000, backupCount=1)
-    fmt = Formatter('%(asctime)s %(levelname)s: '
-                    '%(message)s [%(filename)s +%(lineno)d]')
-    handler.setFormatter(fmt)
-    # handler.setLevel(log_level)
-    app.logger.addHandler(handler)
     app.logger.setLevel(log_level)
-    # print("_configure_logging() set debug level to: {}".format(log_level))
+    # handler = logging.StreamHandler()
+    # handler = RotatingFileHandler('olass.log', maxBytes=99000, backupCount=1)
+    # fmt = Formatter('%(asctime)s %(levelname)s: '
+    #                 '%(message)s [%(filename)s +%(lineno)d]')
+    # handler.setFormatter(fmt)
+    # app.logger.addHandler(handler)
     app.logger.debug("_configure_logging() set log_level to: {}"
                      .format(log_level))
 
