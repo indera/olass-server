@@ -5,16 +5,19 @@ Flask-Login
 Flask-OAuthlib
 Flask-SQLAlchemy
 Flask-Testing
+
+# @see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html
+PyMySQL
 SQLAlchemy
-mysqlclient
+
 pyOpenSSL
 pytest
 pytz
 
 
 # utility functions in tasks.py 
-invoke
 colorama
+invoke
 
 # Flask-Mail
 # Flask-Principal
