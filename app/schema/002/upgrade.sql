@@ -15,7 +15,7 @@ CREATE TABLE partner (
     partner_added_at datetime NOT NULL,
  PRIMARY KEY (partner_id),
  UNIQUE KEY (partner_code)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
 CREATE TABLE rule (
@@ -25,7 +25,7 @@ CREATE TABLE rule (
     rule_added_at datetime NOT NULL,
  PRIMARY KEY (rule_id),
  UNIQUE KEY (rule_code)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
 /*
@@ -46,7 +46,7 @@ CREATE TABLE linkage (
  KEY (linkage_added_at),
  CONSTRAINT `fk_linkage_partner_id` FOREIGN KEY (partner_id) REFERENCES partner (partner_id),
  CONSTRAINT `fk_linkage_rule_id` FOREIGN KEY (rule_id) REFERENCES rule (rule_id)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
 SHOW TABLES;

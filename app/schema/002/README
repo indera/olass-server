@@ -39,8 +39,9 @@ This schema change adds tables for the application.
 +---------+---------------+-------------------------------------------------------------------+---------------------+
 
 -- Find all linkages originating from 'UF'
-(olass@localhost) [olass]> SELECT
-    linkage_id, partner_code, rule_code, HEX(linkage_uuid), HEX(linkage_hash)
+(olass@localhost) [olass]>
+SELECT
+    linkage_id, partner_code, rule_code, lower(HEX(linkage_uuid)), lower(HEX(linkage_hash))
 FROM
     linkage
     JOIN partner USING (partner_id)
@@ -48,17 +49,27 @@ FROM
 WHERE
     partner_code = 'UF'
 ;
+
 +------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
-| linkage_id | partner_code | rule_code | HEX(linkage_uuid)                | HEX(linkage_hash)                                                |
+| linkage_id | partner_code | rule_code | lower(HEX(linkage_uuid))         | lower(HEX(linkage_hash))                                         |
 +------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
-|          1 | UF           | F_L_D_Z   | 11E6089D6AEBB0D4AC3C9B18A7FCF9ED | 448907DC613E5ADC1B83320223F60C354B47A42CB41316390E6D345A096403D6 |
-|          2 | UF           | L_F_D_Z   | 11E6089D6AEBCAF6AC3C9B18A7FCF9ED | 8A8FB351B694324091A9F37C74D1122330696DFE1B12CEDDC2422F80C9D50E6F |
+|          1 | UF           | F_L_D_Z   | 006081360bc211e6af38933b6d71ed52 | 8b31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506 |
+|          2 | UF           | L_F_D_Z   | 006090f40bc211e6af38933b6d71ed52 | db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d |
 +------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
 
 -- Find the 'OneFLorida ID' by providing a hash of the patient data
-(olass@localhost) [olass]> SELECT HEX(linkage_uuid) FROM linkage WHERE linkage_hash = UNHEX(SHA2('First-Last-DOB-Zip', 256));
-+----------------------------------+
-| hex(linkage_uuid)                |
-+----------------------------------+
-| 11E5E2210F1A5BE2BFBA005056B43375 |
-+----------------------------------+
+(olass@localhost) [olass]>
+SELECT
+    linkage_id, partner_code, rule_code, lower(HEX(linkage_uuid)), lower(HEX(linkage_hash))
+FROM
+    linkage
+    JOIN partner USING (partner_id)
+    JOIN rule USING (rule_id)
+WHERE
+    linkage_hash = lower(UNHEX(SHA2('first-last-dob-zip', 256)));
+
++------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
+| linkage_id | partner_code | rule_code | lower(HEX(linkage_uuid))         | lower(HEX(linkage_hash))                                         |
++------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
+|          1 | UF           | F_L_D_Z   | 006081360bc211e6af38933b6d71ed52 | 8b31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506 |
++------------+--------------+-----------+----------------------------------+------------------------------------------------------------------+
