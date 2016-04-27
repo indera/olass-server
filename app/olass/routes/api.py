@@ -104,21 +104,42 @@ def api_save_patient_hashes():
     """
     For each chunk save a new uuid or return an existing one from the database.
 
-== Example input json:
+== Example of input json:
 {
-  "partner_code": "hcn",
+  "partner_code": "UF",
   "data":
-      { "1": [
-        {"rule_code": "a", "chunk": "abc..."},
-        {"rule_code": "b", "chunk": "xyz..."}],
-
-        "2": [
-        {"rule_code": "a", "chunk": "123..."},
-        {"rule_code": "b", "chunk": "456..."}],
-      }
+     {
+       "1":
+       [{"rule_code": "F_L_D_Z",
+         "chunk": "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506"},
+        {"rule_code": "F_L_D_Z",
+          "chunk": "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d"},
+        {"rule_code": "F_L_D_Z",
+          "chunk": "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa"}
+        ]
+     }
 }
 
 == Example of output json:
+{
+    "status": "success",
+    "data": {
+        "1": {
+            "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506": {
+                "rule": "F_L_D_Z",
+                "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
+            },
+            "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa": {
+                "rule": "F_L_D_Z",
+                "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
+            },
+            "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d": {
+                "rule": "L_F_D_Z",
+                "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
+            }
+        }
+    }
+}
     """
     json = request.get_json(silent=False)
 
@@ -155,13 +176,8 @@ def api_save_patient_hashes():
     # patient chunks are received in groups
     for pat_id, pat_chunks in json['data'].items():
         chunks = [x.get('chunk') for x in pat_chunks]
-        # uuids = LinkageEntity.get_uuids_for_chunks(chunks)
         chunks_cache = LinkageEntity.get_chunks_cache(chunks)
         uuids = LinkageEntity.get_distinct_uuids_for_chunks(chunks_cache)
-
-        app.logger.info("==> chunks: {}".format(chunks_cache))
-        app.logger.info("==> uuids: {}".format(uuids))
-
         app.logger.info("Found [{}] matching uuids from [{}] chunks of patient "
                         "[{}]".format(len(uuids), len(chunks), pat_id))
 
@@ -197,8 +213,8 @@ def api_save_patient_hashes():
                 rule_code = chunk_data['rule_code']
                 binary_hash = unhexlify(chunk.encode('utf-8'))
                 binary_uuid = unhexlify(uuid.encode('utf-8'))
-
                 link = chunks_cache.get(chunk)
+
                 if not link:
                     app.logger.info("Attempt to insert for hash [{}]"
                                     .format(chunk))

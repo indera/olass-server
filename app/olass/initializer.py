@@ -86,7 +86,6 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
         else:
             SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DATABASE_PATH
     else:
-        # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{}:{}@{}/{}?charset=utf8' \
         SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{}:{}@{}/{}?charset=utf8' \
             .format(app.config['DB_USER'],
                     app.config['DB_PASS'],
