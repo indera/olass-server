@@ -5,9 +5,7 @@ Goal: Delegate requests to the `/api` path to the appropriate controller
     Andrei Sura <sura.andrei@gmail.com>
 """
 import collections
-# from pprint import pprint
 from binascii import unhexlify
-# from datetime import datetime
 from flask import request
 # from flask import session
 # from flask import make_response
@@ -35,28 +33,40 @@ def api_check_existing():
     For each chunk verify if it exists in the database.
 
 == Example input json:
+
 {
-  "partner_code": "hcn",
-  "data":
-        { "1": ["abc...", "def..."],
-          "2": ["xyz...", "123..."], ... }
+  "partner_code": "UF",
+  "data": {
+"1":
+[{"rule_code": "F_L_D_Z",
+  "chunk": "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506"},
+ {"rule_code": "F_L_D_Z",
+   "chunk": "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d"},
+ {"rule_code": "F_L_D_Z",
+   "chunk": "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa"}]
+}
 }
 
 == Example of output json:
 {
-  "data": {
+"status": "success",
+"data": {
     "1": {
-      "abc...": {
-        "is_found": 1,
-        "rule": "F_L_D_Z" },
-      "def...": {
-        "is_found": 0,
-        "rule": "L_F_D_Z" }
-    },
-    "2": {...}
+        "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506": {
+            "is_found": 1,
+            "rule": "F_L_D_Z"
+        },
+        "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa": {
+            "is_found": 1,
+            "rule": "F_L_D_Z"
+        },
+        "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d": {
+            "is_found": 1,
+            "rule": "L_F_D_Z"
+        }
     }
 }
-    ...
+}
     """
     json = request.get_json(silent=False)
     if not json:
@@ -65,19 +75,20 @@ def api_check_existing():
         return utils.jsonify_error(err)
 
     app.logger.info("call api_check_existing() from partner: {}"
-                    .format(json['partner']))
+                    .format(json['partner_code']))
 
     result = collections.defaultdict(dict)
 
     # init the response dictionary
     for pat_id, pat_chunks in json['data'].items():
-        short_chunks = [LinkageEntity.short_hash(x) for x in pat_chunks]
-        result[pat_id] = dict.fromkeys(short_chunks)
+        chunks = [x.get('chunk') for x in pat_chunks]
+        result[pat_id] = dict.fromkeys(chunks)
 
     # patient chunks are received in groups
     for pat_id, pat_chunks in json['data'].items():
+        chunks = [x.get('chunk') for x in pat_chunks]
 
-        for chunk in pat_chunks:
+        for chunk in chunks:
             if len(chunk) != 64:
                 app.logger.warn("Skip chunk for patient [{}] with length: {}"
                                 .format(pat_id, len(chunk)))
@@ -88,13 +99,11 @@ def api_check_existing():
             link = LinkageEntity.query.filter_by(
                 linkage_hash=binary_hash).one_or_none()
 
-            short_chunk = LinkageEntity.short_hash(chunk)
-
             if link:
-                result[pat_id][short_chunk] = \
+                result[pat_id][chunk] = \
                     {"is_found": 1, "rule": link.rule.rule_code}
             else:
-                result[pat_id][short_chunk] = {"is_found": 0}
+                result[pat_id][chunk] = {"is_found": 0}
 
     return utils.jsonify_success(result)
 
@@ -108,37 +117,37 @@ def api_save_patient_hashes():
 {
   "partner_code": "UF",
   "data":
-     {
-       "1":
-       [{"rule_code": "F_L_D_Z",
-         "chunk": "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506"},
-        {"rule_code": "F_L_D_Z",
-          "chunk": "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d"},
-        {"rule_code": "F_L_D_Z",
-          "chunk": "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa"}
-        ]
-     }
+{
+"1":
+[{"rule_code": "F_L_D_Z",
+  "chunk": "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506"},
+ {"rule_code": "F_L_D_Z",
+   "chunk": "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d"},
+ {"rule_code": "F_L_D_Z",
+   "chunk": "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa"}
+ ]
+}
 }
 
 == Example of output json:
 {
-    "status": "success",
-    "data": {
-        "1": {
-            "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506": {
-                "rule": "F_L_D_Z",
-                "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
-            },
-            "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa": {
-                "rule": "F_L_D_Z",
-                "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
-            },
-            "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d": {
-                "rule": "L_F_D_Z",
-                "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
-            }
+"status": "success",
+"data": {
+    "1": {
+        "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506": {
+            "rule": "F_L_D_Z",
+            "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
+        },
+        "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa": {
+            "rule": "F_L_D_Z",
+            "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
+        },
+        "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d": {
+            "rule": "L_F_D_Z",
+            "uuid": "4d4f951c0beb11e68fb0f45c898e9b67"
         }
     }
+}
 }
     """
     json = request.get_json(silent=False)
