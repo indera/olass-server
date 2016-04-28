@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Goal: store shortcuts to common tasks
 
@@ -71,7 +70,7 @@ def reset_db(db_name=None):
     run('sudo mysql {} < schema/001/upgrade.sql'.format(db_name))
     run('sudo mysql {} < schema/002/upgrade.sql'.format(db_name))
     run('sudo mysql {} < schema/002/data.sql'.format(db_name))
-
+    print(col.Fore.GREEN + "[{}] Done.".format(STATUS_PASS))
 
 @task
 def go():
