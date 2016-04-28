@@ -1,7 +1,7 @@
 
 -- remove oauth tables
 
-DROP TABLE token;
-DROP TABLE grant;
-DROP TABLE client;
-DROP TABLE user;
+DROP TABLE oauth_grant_token;
+DROP TABLE oauth_client_token;
+DROP TABLE oauth_client;
+DROP TABLE oauth_user;
