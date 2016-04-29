@@ -16,12 +16,16 @@ from olass.main import db
 
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
+
+from olass.models.person import Person
 from olass.models.partner_entity import PartnerEntity
 from olass.models.rule_entity import RuleEntity
-from olass.models.linkage_entity import LinkageEntity
-from olass.models.person import Person
-
 from olass.models.rule_entity import RULE_CODE_F_L_D_Z
+from olass.models.linkage_entity import LinkageEntity
+
+from olass.models.oauth_user_entity import OauthUserEntity
+from olass.models.oauth_user_role_entity import OauthUserRoleEntity
+from olass.models.oauth_role_entity import OauthRoleEntity
 
 
 class BaseTestCaseWithData(BaseTestCase):
@@ -29,38 +33,38 @@ class BaseTestCaseWithData(BaseTestCase):
     """ Add data... """
 
     def setUp(self):
-            db.create_all()
-            self.create_partners()
-            self.create_rules()
-            self.create_oauth_users()
-            self.create_sample_data()
+        db.create_all()
+        self.create_partners()
+        self.create_rules()
+        self.create_sample_data()
+        self.create_oauth_users()
 
     def create_partners(self):
-            """
-            Create rows
-            """
-            added_date = utils.get_db_friendly_date_time()
-            partner_uf = PartnerEntity.create(
-                partner_code="UF",
-                partner_description="University of Florida",
-                partner_added_at=added_date)
+        """
+        Create rows
+        """
+        added_date = utils.get_db_friendly_date_time()
+        partner_uf = PartnerEntity.create(
+            partner_code="UF",
+            partner_description="University of Florida",
+            partner_added_at=added_date)
 
-            partner_fh = PartnerEntity.create(
-                partner_code="FH",
-                partner_description="Florida Hospital",
-                partner_added_at=added_date)
+        partner_fh = PartnerEntity.create(
+            partner_code="FH",
+            partner_description="Florida Hospital",
+            partner_added_at=added_date)
 
-            self.assertEquals(1, partner_uf.id)
-            self.assertEquals(2, partner_fh.id)
-            self.assertEquals("UF", partner_uf.partner_code)
-            self.assertEquals("FH", partner_fh.partner_code)
+        self.assertEquals(1, partner_uf.id)
+        self.assertEquals(2, partner_fh.id)
+        self.assertEquals("UF", partner_uf.partner_code)
+        self.assertEquals("FH", partner_fh.partner_code)
 
-            # verify that more than one
-            with self.assertRaises(MultipleResultsFound):
-                    PartnerEntity.query.filter(
-                        PartnerEntity.
-                        partner_description.like(
-                            '%Florida%')).one()
+        # verify that more than one
+        with self.assertRaises(MultipleResultsFound):
+                PartnerEntity.query.filter(
+                    PartnerEntity.
+                    partner_description.like(
+                        '%Florida%')).one()
 
     def create_rules(self):
         """
@@ -127,4 +131,47 @@ class BaseTestCaseWithData(BaseTestCase):
         """ Add user, role, user_role
         Note: partners should exist
         """
-        pass
+        added_at = utils.get_db_friendly_date_time()
+
+        ##############
+        # add role row
+        role = OauthRoleEntity.create(
+            role_code='root',
+            role_description='super-user can do xyz...',
+            added_at=added_at
+        )
+        self.assertEquals(1, role.id)
+        role = OauthRoleEntity.get_by_id(1)
+        self.assertIsNotNone(role)
+        print("Expect: {}".format(role))
+
+        ##############
+        # add user row
+        user = OauthUserEntity.create(
+            email='test@test.com',
+            added_at=added_at
+        )
+        self.assertEquals(1, user.id)
+        print("Expect: {}".format(user))
+
+        ##############
+        # add user_role row
+        partner = PartnerEntity.query.filter_by(partner_code="UF").one()
+        print("Expect: {}".format(partner))
+
+        user_role = OauthUserRoleEntity.create(
+            partner_id=partner.id,
+            user_id=user.id,
+            role_id=role.id,
+            added_at=added_at
+        )
+        user_role = OauthUserRoleEntity.get_by_id(1)
+        self.assertIsNotNone(user_role)
+        print("Expect: {}".format(user_role))
+
+        ##############
+        # Verify that the user now is properly mapped to a partner and a role
+        user = OauthUserEntity.get_by_id(1)
+        self.assertIsNotNone(user.partner)
+        self.assertIsNotNone(user.role)
+        print("Expect: {}".format(user))
