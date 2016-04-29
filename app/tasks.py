@@ -41,7 +41,7 @@ def init_db(db_name=None):
     if exists:
         print(col.Fore.RED +
               "The database '{}' already exists "
-              "(name retreived from schema/000/upgrade.sql)".format(db_name))
+              "(name retrieved from schema/000/upgrade.sql)".format(db_name))
         sys.exit(1)
 
     if not ask_yes_no("Do you want to create the database '{}'?"
@@ -53,6 +53,9 @@ def init_db(db_name=None):
     run('sudo mysql {} < schema/001/upgrade.sql'.format(db_name))
     run('sudo mysql {} < schema/002/upgrade.sql'.format(db_name))
     run('sudo mysql {} < schema/002/data.sql'.format(db_name))
+    run('sudo mysql {} < schema/003/upgrade.sql'.format(db_name))
+    run('sudo mysql {} < schema/003/data.sql'.format(db_name))
+    print(col.Fore.GREEN + "[{}] Done.".format(STATUS_PASS))
 
 
 @task
@@ -70,6 +73,8 @@ def reset_db(db_name=None):
     run('sudo mysql {} < schema/001/upgrade.sql'.format(db_name))
     run('sudo mysql {} < schema/002/upgrade.sql'.format(db_name))
     run('sudo mysql {} < schema/002/data.sql'.format(db_name))
+    run('sudo mysql {} < schema/003/upgrade.sql'.format(db_name))
+    run('sudo mysql {} < schema/003/data.sql'.format(db_name))
     print(col.Fore.GREEN + "[{}] Done.".format(STATUS_PASS))
 
 @task
@@ -83,7 +88,7 @@ def go():
 @task
 def test():
     """ Run tests """
-    run('PYTHONPATH="." py.test -v --tb=short -s tests/ ')
+    run('PYTHONPATH="." py.test -v --tb=short -s tests/ --color=yes')
 
 
 @task
