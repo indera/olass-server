@@ -46,7 +46,7 @@ def get_dir_for_prefix(prefix):
     return path
 
 
-def ask_yes_no(question, default="yes"):
+def ask_yes_no(question, default="y"):
     """Ask a yes/no question via raw_input() and return the answer
     as a boolean.
 
@@ -58,21 +58,24 @@ def ask_yes_no(question, default="yes"):
 
     if default is None:
         prompt = " [y/n] "
-    elif default == "yes":
+    elif default == "y":
         prompt = " [Y/n] "
-    elif default == "no":
+    elif default == "n":
         prompt = " [y/N] "
     else:
         raise ValueError("invalid default answer: '%s'" % default)
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = input().lower()[0]
+        choice = input().lower()
 
         if default is not None and choice == '':
             return valid[default]
-        elif choice in valid:
-            return valid[choice]
+
+        choice_letter = choice[0]
+
+        if choice_letter in valid:
+            return valid[choice_letter]
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
