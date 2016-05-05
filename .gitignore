@@ -24,9 +24,9 @@ coverage.json
 pylint.out
 
 # Developer's files
-/app/deploy/settings.conf
+/app/deploy/settings.py
 /app/deploy/*/fabric.py
-/app/deploy/*/settings.conf
+/app/deploy/*/settings.py
 /app/deploy/*/virtualhost.conf
 
 app/ssl/server.key

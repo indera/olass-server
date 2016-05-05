@@ -25,7 +25,7 @@ class DefaultConfig(object):
 
     # When we deploy we use /srv/apps/olass/ folder
     CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR,
-                                              '/srv/apps/olass/settings.conf')
+                                              '/srv/apps/olass/settings.py')
 
     # SSL Certificate config
     # Note: the paths to the certificate do *not matter* when the app is
@@ -65,7 +65,7 @@ class DebugConfig(DefaultConfig):
     DEBUG = True
     DEBUG_TB_ENABLED = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-    CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR, 'deploy/settings.conf')
+    CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR, 'deploy/settings.py')
 
 
 class TestConfig(DefaultConfig):
@@ -73,7 +73,7 @@ class TestConfig(DefaultConfig):
     TESTING = True
     CSRF_ENABLED = False
     CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR,
-                                              'deploy/settings.conf')
+                                              'deploy/settings.py')
 
     if os.getenv('CONTINUOUS_INTEGRATION', '') > '':
         print("CONTINUOUS_INTEGRATION: {}"
