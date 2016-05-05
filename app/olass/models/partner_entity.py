@@ -35,6 +35,6 @@ class PartnerEntity(db.Model, CRUDMixin):
     def __repr__(self):
         """ Return a friendly object representation """
         return "<PartnerEntity(partner_id: {0.id}, "\
-            "partner_code: {0.partner_code}" \
-            "partner_description: {0.partner_description}" \
-            "partner_addded_at: {0.partner_addded_at})>".format(self)
+            "partner_code: {0.partner_code}, " \
+            "partner_description: {0.partner_description}, " \
+            "partner_addded_at: {0.partner_added_at})>".format(self)

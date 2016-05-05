@@ -7,9 +7,6 @@ ORM for "oauth_user_role"
 
 from olass.models.crud_mixin import CRUDMixin
 from olass.main import db
-# from olass.models.partner_entity import PartnerEntity
-# from olass.models.oauth_role_entity import OauthRoleEntity
-# from olass.models.oauth_user_entity import OauthUserEntity
 
 
 """
@@ -36,17 +33,21 @@ class OauthUserRoleEntity(db.Model, CRUDMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey('oauth_user.id'), nullable=False)
     role_id = db.Column(
-        db.Integer, db.ForeignKey('partner.partner_id'), nullable=False)
+        db.Integer, db.ForeignKey('oauth_role.id'), nullable=False)
     added_at = db.Column(db.DateTime, nullable=False)
 
     # @OneToOne
-    # partner = db.relationship(PartnerEntity, uselist=False, lazy='joined')
-    # user = db.relationship(OauthUserEntity, uselist=False, lazy='joined')
-    # role = db.relationship(OauthRoleEntity, uselist=False, lazy='joined')
+    partner = db.relationship('PartnerEntity', uselist=False, lazy='joined',
+                              foreign_keys=[partner_id])
+    user = db.relationship('OauthUserEntity', uselist=False, lazy='joined')
+    role = db.relationship('OauthRoleEntity', uselist=False, lazy='joined',
+                           foreign_keys=[role_id])
 
     def __repr__(self):
         return "<UserRole(id: {0.id}, " \
             "partner_id: {0.partner_id}, " \
             "user_id: {0.user_id}, " \
+            "user: {0.user.email}, " \
             "role_id: {0.role_id}, " \
+            "role: {0.role.role_code}, " \
             "added_at: {0.added_at})>".format(self)

@@ -7,8 +7,8 @@ ORM for "oauth_user"
 
 from olass.models.crud_mixin import CRUDMixin
 from olass.main import db
-from olass.models.partner_entity import PartnerEntity
-from olass.models.oauth_role_entity import OauthRoleEntity
+# from olass.models.partner_entity import PartnerEntity
+# from olass.models.oauth_role_entity import OauthRoleEntity
 from olass.models.oauth_user_role_entity import OauthUserRoleEntity
 
 
@@ -42,7 +42,7 @@ class OauthUserEntity(db.Model, CRUDMixin):
 
     # Indirect mappings via `oauth_user_role` table
     partner = db.relationship(
-        PartnerEntity,
+        'PartnerEntity',
         secondary=OauthUserRoleEntity.__tablename__,
         primaryjoin="oauth_user.c.id==oauth_user_role.c.user_id",
         secondaryjoin="oauth_user_role.c.partner_id==partner.c.partner_id",
@@ -51,7 +51,7 @@ class OauthUserEntity(db.Model, CRUDMixin):
     )
 
     role = db.relationship(
-        OauthRoleEntity,
+        'OauthRoleEntity',
         secondary=OauthUserRoleEntity.__tablename__,
         primaryjoin="oauth_user.c.id==oauth_user_role.c.user_id",
         secondaryjoin="oauth_user_role.c.role_id==oauth_role.c.id",
