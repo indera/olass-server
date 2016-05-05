@@ -27,6 +27,10 @@ from olass.models.oauth_user_entity import OauthUserEntity
 from olass.models.oauth_user_role_entity import OauthUserRoleEntity
 from olass.models.oauth_role_entity import OauthRoleEntity
 
+from olass.models.oauth_client_entity import OauthClientEntity
+from olass.models.oauth_grant_code_entity import OauthGrantCodeEntity
+from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
+
 
 class BaseTestCaseWithData(BaseTestCase):
 
@@ -132,6 +136,7 @@ class BaseTestCaseWithData(BaseTestCase):
         Note: partners should exist
         """
         added_at = utils.get_db_friendly_date_time()
+        expires_date = utils.get_expiration_date(10)
 
         ##############
         # add role row
@@ -175,3 +180,35 @@ class BaseTestCaseWithData(BaseTestCase):
         self.assertIsNotNone(user.partner)
         self.assertIsNotNone(user.role)
         print("Expect: {}".format(user))
+
+        ##############
+        # Verify that we can save a client, grant code, access token
+        client = OauthClientEntity.create(
+            id='client_1',
+            client_secret='secret_1',
+            user_id=user.id,
+            added_at=added_at)
+
+        grant = OauthGrantCodeEntity.create(
+            client_id=client.id,
+            code='grant_code_1',
+            expires=expires_date,
+            added_at=added_at)
+
+        token = OauthAccessTokenEntity.create(
+            client_id=client.id,
+            token_type='Bearer',
+            access_token='access_token_1',
+            refresh_token='refresh_token_1',
+            expires=expires_date,
+            added_at=added_at)
+
+        self.assertIsNotNone(client.id)
+        self.assertIsNotNone(grant.id)
+        self.assertIsNotNone(token.id)
+        self.assertIsNotNone(grant.client)
+        self.assertIsNotNone(token.client)
+
+        print("Expect: {}".format(client))
+        print("Expect: {}".format(grant))
+        print("Expect: {}".format(token))
