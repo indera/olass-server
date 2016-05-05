@@ -46,6 +46,20 @@ UNION
         AND r.role_code = 'staff'
 ;
 
+
+INSERT INTO oauth_client
+    (id, client_secret, user_id, added_at)
+SELECT
+    'client_1', 'secret_1', u.id, NOW()
+FROM
+    oauth_user u
+WHERE
+    u.email = 'asura-root@ufl.edu'
+;
+
+-- Show sample data
 SELECT * FROM oauth_user;
 SELECT * FROM oauth_role;
 SELECT * FROM oauth_user_role;
+
+SELECT * FROM oauth_client;
