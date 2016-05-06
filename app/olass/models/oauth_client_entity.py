@@ -25,7 +25,7 @@ class OauthClientEntity(db.Model, CRUDMixin):
     suggested that the client is registered by a user on your site, but it is
     not required.
     """
-    __table_name__ = 'oauth_client'
+    __tablename__ = 'oauth_client'
 
     id = db.Column(db.String(40), primary_key=True)
     client_secret = db.Column(db.String(55), nullable=False)

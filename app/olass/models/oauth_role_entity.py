@@ -27,10 +27,8 @@ class OauthRoleEntity(db.Model, CRUDMixin):
     id = db.Column(db.Integer, primary_key=True)
     role_code = db.Column('role_code', db.Text, nullable=False)
     role_description = db.Column('role_description', db.Text, nullable=False)
-    added_at = db.Column('added_at', db.DateTime, nullable=False)
 
     def __repr__(self):
         return "<OauthRoleEntity(id: {0.id}, " \
             "role_code: {0.role_code}, " \
-            "role_description: {0.role_description}, " \
-            "added_at: {0.added_at})>".format(self)
+            "role_description: {0.role_description})>".format(self)

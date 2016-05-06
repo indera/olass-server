@@ -26,7 +26,7 @@ class OauthGrantCodeEntity(db.Model, CRUDMixin):
     when the authorization finished.
     @TODO: implement using redis
     """
-    __table_name__ = 'oauth_grant_code'
+    __tablename__ = 'oauth_grant_code'
 
     id = db.Column(db.Integer, primary_key=True)
 

@@ -25,7 +25,7 @@ class OauthAccessTokenEntity(db.Model, CRUDMixin):
     """
     Access tokens are used for accessing protected data.
     """
-    __table_name__ = 'oauth_access_token'
+    __tablename__ = 'oauth_access_token'
 
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(
