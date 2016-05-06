@@ -142,8 +142,7 @@ class BaseTestCaseWithData(BaseTestCase):
         # add role row
         role = OauthRoleEntity.create(
             role_code='root',
-            role_description='super-user can do xyz...',
-            added_at=added_at
+            role_description='super-user can do xyz...'
         )
         self.assertEquals(1, role.id)
         role = OauthRoleEntity.get_by_id(1)
