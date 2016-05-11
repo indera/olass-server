@@ -48,9 +48,14 @@ UNION
 
 
 INSERT INTO oauth_client
-    (id, client_secret, user_id, added_at)
+    (client_id, client_secret, user_id, _redirect_uris, _default_scopes, added_at)
 SELECT
-    'client_1', 'secret_1', u.id, NOW()
+    'client_1',
+    'secret_1',
+    u.id,
+    'urn:ietf:wg:oauth:2.0:oob https://localhost:8000/authorized',
+    'email',
+    NOW()
 FROM
     oauth_user u
 WHERE

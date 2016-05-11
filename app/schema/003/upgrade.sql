@@ -41,13 +41,15 @@ CREATE TABLE oauth_user_role (
 ;
 
 CREATE TABLE oauth_client (
-    id varchar(40) NOT NULL,
+    id int(11) NOT NULL AUTO_INCREMENT,
+    client_id varchar(40) NOT NULL,
     client_secret varchar(55) NOT NULL,
     user_id int(11) NOT NULL,
     _redirect_uris text,
     _default_scopes text,
     added_at datetime DEFAULT NULL,
  PRIMARY KEY (id),
+ UNIQUE KEY(client_id),
  KEY user_id (user_id),
  CONSTRAINT `fk_client_user_id` FOREIGN KEY (user_id) REFERENCES oauth_user (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
@@ -66,7 +68,7 @@ CREATE TABLE oauth_grant_code (
  PRIMARY KEY (id),
  KEY (client_id),
  KEY (code),
- CONSTRAINT `fk_oauth_grant_code_client_id` FOREIGN KEY (client_id) REFERENCES oauth_client (id) ON DELETE CASCADE
+ CONSTRAINT `fk_oauth_grant_code_client_id` FOREIGN KEY (client_id) REFERENCES oauth_client (client_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
@@ -83,6 +85,6 @@ CREATE TABLE oauth_access_token (
   UNIQUE KEY (access_token),
   UNIQUE KEY (refresh_token),
   KEY (client_id),
-  CONSTRAINT `fk_oauth_access_token_client_id` FOREIGN KEY (client_id) REFERENCES oauth_client (id) ON DELETE CASCADE
+  CONSTRAINT `fk_oauth_access_token_client_id` FOREIGN KEY (client_id) REFERENCES oauth_client (client_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;

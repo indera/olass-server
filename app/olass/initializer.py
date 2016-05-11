@@ -104,6 +104,7 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
     # load routes
     from .routes import api
     from .routes import index
+    from .routes import oauth
 
     if app.debug and app.config['DEBUG_TB_ENABLED'] and not app.testing:
         # When runing tests there is no need for the debugtoolbar
