@@ -60,7 +60,7 @@ def init_db(db_name=None):
 
 @task
 def reset_db(db_name=None):
-    """ Drop all tables, Create empty tables, and add data. """
+    """ Drop all tables, Create empty tables, and add data """
     db_name = db_name if db_name is not None else get_db_name()
 
     if not ask_yes_no("Do you want to erase the '{}' database"
@@ -77,7 +77,7 @@ def reset_db(db_name=None):
     run('sudo mysql {} < schema/003/data.sql'.format(db_name))
     print(col.Fore.GREEN + "[{}] Done.".format(STATUS_PASS))
 
-@task
+@task(aliases=['run'])
 def go():
     """
     Start the web application using the WSGI webserver provided by Flask
@@ -107,7 +107,7 @@ def lint():
 @task
 def clean():
     """
-    Remove all generated files.
+    Remove all generated files
     """
     run('find . -type f -name "*.pyc" -print | xargs rm -f')
     run('rm -rf htmlcov/ .coverage pylint.out')
