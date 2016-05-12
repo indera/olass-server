@@ -31,6 +31,10 @@ FORMAT_DATABASE_DATE_TIME = "%Y-%m-%d %H:%M:%S"
 FLASH_CATEGORY_ERROR = 'error'
 FLASH_CATEGORY_INFO = 'info'
 
+UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
+                               'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                               '0123456789')
+
 RULE_MAP = {
     rul.RULE_CODE_F_L_D_Z: '{0.first}{0.last}{0.dob}{0.zip}',
     rul.RULE_CODE_L_F_D_Z: '{0.last}{0.first}{0.dob}{0.zip}',
@@ -40,6 +44,28 @@ RULE_MAP = {
 tbl = dict.fromkeys(i for i in range(sys.maxunicode)
                     if unicodedata.category(chr(i)).startswith('P') or
                     chr(i) in [' '])
+
+
+def generate_token_urandom(length=40):
+    """Generates a non-guessable OAuth token
+
+    OAuth 2.0 rfc does not specify the format of tokens except that they
+    should be strings of random characters.
+    """
+    from base64 import b64encode
+    from os import urandom
+    return b64encode(urandom(length))
+
+
+def generate_token(length=40, chars=UNICODE_ASCII_CHARACTER_SET):
+    """Generates a non-guessable OAuth token
+
+    OAuth 2.0 rfc does not specify the format of tokens except that they
+    should be strings of random characters.
+    """
+    from random import SystemRandom
+    rand = SystemRandom()
+    return ''.join(rand.choice(chars) for x in range(length))
 
 
 def prepare_for_hashing(text):
@@ -247,12 +273,14 @@ def get_db_friendly_date_time_string():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
-def get_db_friendly_date_time():
+def get_db_friendly_date_time(when=None):
     """
     :rtype: date
     :return current time in format: "YYYY-MM-DD 01:23:45"
     """
-    return datetime.now().replace(microsecond=0)
+    if not when:
+        when = datetime.now()
+    return when.replace(microsecond=0)
 
 
 def localize_datetime(value, zone_name='US/Eastern'):
