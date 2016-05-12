@@ -27,7 +27,8 @@ class OauthClientEntity(db.Model, CRUDMixin):
     """
     __tablename__ = 'oauth_client'
 
-    id = db.Column(db.String(40), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.String(40), unique=True)
     client_secret = db.Column(db.String(55), nullable=False)
 
     user_id = db.Column(db.ForeignKey('oauth_user.id'))
@@ -56,7 +57,7 @@ class OauthClientEntity(db.Model, CRUDMixin):
          users browser. The user could use a JavaScript debugger to look into
          the application, and see the client password
          """
-        return 'public'
+        return 'confidential'
 
     @property
     def redirect_uris(self):
@@ -66,7 +67,8 @@ class OauthClientEntity(db.Model, CRUDMixin):
 
     @property
     def default_redirect_uri(self):
-        return self.redirect_uris[0]
+        # return self.redirect_uris[0]
+        return ''
 
     @property
     def default_scopes(self):
@@ -74,9 +76,16 @@ class OauthClientEntity(db.Model, CRUDMixin):
             return self._default_scopes.split()
         return []
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'added_at': self.added_at.isoformat(),
+        }
+
     def __repr__(self):
         """ Return a friendly object representation """
         return "<OauthClientEntity(id: {0.id}, "\
-            "client_secret: {0.client_secret}, " \
+            "client_id: {0.client_id}, " \
             "user_id: {0.user_id}, " \
             "added_at: {0.added_at})>".format(self)

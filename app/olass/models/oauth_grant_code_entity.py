@@ -31,8 +31,7 @@ class OauthGrantCodeEntity(db.Model, CRUDMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     client_id = db.Column(
-        # db.String(40), db.ForeignKey('oauth_client.id'),
-        db.String(40), db.ForeignKey(OauthClientEntity.id),
+        db.String(40), db.ForeignKey(OauthClientEntity.client_id),
         nullable=False
     )
     client = db.relationship(OauthClientEntity, uselist=False, lazy='joined')

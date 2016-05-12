@@ -59,6 +59,14 @@ class OauthUserEntity(db.Model, CRUDMixin):
         uselist=False,
     )
 
+    def serialize(self):
+        """ Helper for sending data in http responses """
+        return {
+            'id': self.id,
+            'email': self.email,
+            'added_at': self.added_at.isoformat(),
+        }
+
     def __repr__(self):
         """ Return a friendly object representation """
         display_partner = self.partner.partner_code if self.partner else ''

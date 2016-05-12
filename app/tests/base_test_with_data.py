@@ -183,19 +183,19 @@ class BaseTestCaseWithData(BaseTestCase):
         ##############
         # Verify that we can save a client, grant code, access token
         client = OauthClientEntity.create(
-            id='client_1',
+            client_id='client_1',
             client_secret='secret_1',
             user_id=user.id,
             added_at=added_at)
 
         grant = OauthGrantCodeEntity.create(
-            client_id=client.id,
+            client_id=client.client_id,
             code='grant_code_1',
             expires=expires_date,
             added_at=added_at)
 
         token = OauthAccessTokenEntity.create(
-            client_id=client.id,
+            client_id=client.client_id,
             token_type='Bearer',
             access_token='access_token_1',
             refresh_token='refresh_token_1',
@@ -206,8 +206,27 @@ class BaseTestCaseWithData(BaseTestCase):
         self.assertIsNotNone(grant.id)
         self.assertIsNotNone(token.id)
         self.assertIsNotNone(grant.client)
-        self.assertIsNotNone(token.client)
 
-        print("Expect: {}".format(client))
-        print("Expect: {}".format(grant))
-        print("Expect: {}".format(token))
+        # Verify the token properties
+        self.assertIsNotNone(token.client)
+        self.assertIsNotNone(token.client.user)
+        self.assertIsNotNone(token.user)
+        self.assertIsNotNone(token.user.id)
+        ser = token.serialize()
+        self.assertIsNotNone(ser.get('id'))
+        self.assertIsNotNone(ser.get('access_token'))
+        self.assertIsNotNone(ser.get('expires_in'))
+
+        client = OauthClientEntity.get_by_id(1)
+        client2 = OauthClientEntity.query.filter_by(client_id='client_1').one()
+        grant = OauthGrantCodeEntity.get_by_id(1)
+        role = OauthUserRoleEntity.get_by_id(1)
+
+        self.assertIsNotNone(client)
+        self.assertIsNotNone(client2)
+        self.assertIsNotNone(grant)
+        self.assertIsNotNone(role)
+        print("Expect client: {}".format(client))
+        print("Expect grant: {}".format(grant))
+        print("Expect token: {}".format(token))
+        print("Expect token serialized: {}".format(token.serialize()))

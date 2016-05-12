@@ -5,6 +5,7 @@ ORM for 'oauth_access_token' table
 from olass.models.crud_mixin import CRUDMixin
 from olass.models.oauth_client_entity import OauthClientEntity
 from olass.main import db
+from datetime import datetime
 
 """
 +---------------+--------------+------+-----+---------+----------------+
@@ -29,7 +30,7 @@ class OauthAccessTokenEntity(db.Model, CRUDMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(
-        db.String(40), db.ForeignKey(OauthClientEntity.id),
+        db.String(40), db.ForeignKey(OauthClientEntity.client_id),
         nullable=False
     )
     client = db.relationship(OauthClientEntity, uselist=False, lazy='joined')
@@ -43,17 +44,60 @@ class OauthAccessTokenEntity(db.Model, CRUDMixin):
     added_at = db.Column('added_at', db.DateTime, nullable=False)
 
     @property
+    def user(self):
+        return self.client.user if self.client else None
+
+    @property
     def scopes(self):
         if self._scopes:
             return self._scopes.split()
         return []
 
+    def is_expired(self):
+        """
+        Note: If the `expires` attribute is None we consider the token expired.
+
+        :rtype bool: true if 'expires' datetime > the current datetime
+
+        """
+        if self.expires:
+            return self.expires < datetime.now()
+        return True
+
+    @property
+    def expires_in(self):
+        """
+        :rtype int: the number of seconds left untill the token expiration
+        """
+        secs = 0
+
+        if not self.is_expired():
+            diff = self.expires - datetime.now()
+            secs = int(diff.total_seconds()) + 1
+
+        return secs
+
+    def serialize(self):
+        """
+        It is very important to return at least the following three values:
+
+            - id: used for lookups
+            - access_token: used in the request "Authorization" header
+            - expires_in: used to determine if we need to generate a new token
+
+        """
+        return {
+            'id': self.id,
+            'access_token': self.access_token,
+            'expires_in': self.expires_in,
+        }
+
     def __repr__(self):
         """ Return a friendly object representation """
         return "<OauthAccessTokenEntity(id: {0.id}, "\
             "token_type: {0.token_type}, " \
-            "client_id: {0.client_id}, " \
-            "access_token: {0.access_token}, " \
-            "refresh_token: {0.refresh_token}, " \
+            "user_id: {0.user.id}, " \
             "expires: {0.expires}, " \
+            "expires_in: {0.expires_in}, " \
+            "scopes: {0.scopes}, " \
             "added_at: {0.added_at})>".format(self)
