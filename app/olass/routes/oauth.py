@@ -4,154 +4,231 @@ Goal: Implement routes specific to OAuth2 provider
 @authors:
     Andrei Sura <sura.andrei@gmail.com>
 
+Client Credentials Grant: http://tools.ietf.org/html/rfc6749#section-4.4
+
+Note: client credentials grant type MUST only be used by confidential clients.
+
+--- Confidential Clients ---
+Clients capable of maintaining the confidentiality of their
+credentials (e.g., client implemented on a secure server with
+restricted access to the client credentials), or capable of secure
+client authentication using other means.
+
++---------+                                  +---------------+
+|         |                                  |               |
+|         |>--(A)- Client Authentication --->| Authorization |
+| Client  |                                  |     Server    |
+|         |<--(B)---- Access Token ---------<|               |
+|         |                                  |               |
++---------+                                  +---------------+
+
+
+                    Client Credentials Flow
+
+The flow illustrated above includes the following steps:
+
+(A)  The client authenticates with the authorization server and
+    requests an access token from the token endpoint.
+
+(B)  The authorization server authenticates the client, and if valid,
+    issues an access token.
+
+-------------------------------------------------------------------------------
+According to the rfc6749, client authentication is required in the
+following cases:
+
+    - Resource Owner Password Credentials Grant: see `Section 4.3.2`.
+    - Authorization Code Grant: see `Section 4.1.3`.
+    - Refresh Token Grant: see `Section 6`.
+
 """
-# TODO:
-#   - use entity.create()
-#   - fix usage of current_user
+# TODO: read http://flask-oauthlib.readthedocs.io/en/latest/client.html
+
+import sys
+import logging
 
 from datetime import datetime, timedelta
-from flask import request
-from flask import session
-from flask import render_template, redirect, jsonify
-
-from flask_login import login_required
-from flask_login import current_user
 from flask_oauthlib.provider import OAuth2Provider
+from flask import request
+# from werkzeug.security import gen_salt
+# from flask import Response
+# from flask import url_for
+# from flask import session
+# from flask import render_template, redirect
+# from flask_login import login_required
+# from flask_login import current_user
 
-from werkzeug.security import gen_salt
+from olass import utils
+from olass.main import app
 
-from olass.main import app, db
-from olass.models.oauth import User, Client, Grant, Token
+# from olass.models.oauth_user_entity import OauthUserEntity
+from olass.models.oauth_client_entity import OauthClientEntity
+from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
+
+TOKEN_TYPE_BEARER = 'Bearer'
+
+# TODO: read this options from config file
+TOKEN_EXPIRES_SECONDS = 36000
+TOKEN_LENGTH = 40
+
+log = app.logger
+flog = logging.getLogger('flask_oauthlib')
+flog.addHandler(logging.StreamHandler(sys.stdout))
+flog.setLevel(logging.DEBUG)
+
 oauth = OAuth2Provider(app)
+
+
+@oauth.usergetter
+def load_user():
+    log.info("==> load_user()")
+    return None
 
 
 @oauth.clientgetter
 def load_client(client_id):
-    return Client.query.filter_by(client_id=client_id).first()
-
-
-@oauth.grantgetter
-def load_grant(client_id, code):
-    return Grant.query.filter_by(client_id=client_id, code=code).first()
-
-
-@oauth.grantsetter
-def save_grant(client_id, code, request, *args, **kwargs):
-    # decide the expires time yourself
-    expires = datetime.utcnow() + timedelta(seconds=100)
-    grant = Grant(
-        client_id=client_id,
-        code=code['code'],
-        redirect_uri=request.redirect_uri,
-        _scopes=' '.join(request.scopes),
-        user=current_user,
-        expires=expires
-    )
-    db.session.add(grant)
-    db.session.commit()
-    return grant
+    """
+    This method is used by provider->authenticate_client()
+    """
+    return OauthClientEntity.query.filter_by(client_id=client_id).one()
 
 
 @oauth.tokengetter
 def load_token(access_token=None, refresh_token=None):
+    tok = None
+
     if access_token:
-        return Token.query.filter_by(access_token=access_token).first()
+        tok = OauthAccessTokenEntity.query.filter_by(
+            access_token=access_token).one_or_none()
     elif refresh_token:
-        return Token.query.filter_by(refresh_token=refresh_token).first()
+        tok = OauthAccessTokenEntity.query.filter_by(
+            refresh_token=refresh_token).one_or_none()
 
-
-@oauth.tokensetter
-def save_token(token, request, *args, **kwargs):
-    toks = Token.query.filter_by(
-        client_id=request.client.client_id,
-        user_id=request.user.id
-    )
-    # make sure that every client has only one token connected to a user
-    for t in toks:
-        db.session.delete(t)
-
-    expires_in = token.pop('expires_in')
-    expires = datetime.utcnow() + timedelta(seconds=expires_in)
-
-    tok = Token(
-        access_token=token['access_token'],
-        refresh_token=token['refresh_token'],
-        token_type=token['token_type'],
-        _scopes=token['scope'],
-        expires=expires,
-        client_id=request.client.client_id,
-        user_id=request.user.id,
-    )
-    db.session.add(tok)
-    db.session.commit()
+    if tok:
+        log.info('Loaded token [{}] for user [{}]'
+                 .format(tok.id, tok.client))
+    else:
+        log.warn('Unable to load token for validate_bearer_token()')
     return tok
 
-
-@app.route('/admin/add_user', methods=('GET', 'POST'))
-@login_required
-def admin_add_user():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        user = User.query.filter_by(username=username).first()
-
-        if not user:
-            user = User(username=username)
-            db.session.add(user)
-            db.session.commit()
-        session['id'] = user.id
-        return redirect('/')
-
-    user = current_user
-    return render_template('home.html', user=user)
-
-
-@app.route('/admin/add_client')
-@login_required
-def admin_add_client():
+@oauth.tokensetter
+def save_token(token_props, req, *args, **kwargs):
     """
 
     """
-    user = current_user
-    if not user:
-        return redirect('/')
+    result_token = None
+    token_id = token_props.get('id')
+    token = OauthAccessTokenEntity.get_by_id(token_id)
+    log.info("From {} got {}".format(token_id, token))
 
-    item = Client(
-        client_id=gen_salt(40),
-        client_secret=gen_salt(50),
-        _redirect_uris=' '.join([
-            '/authorized',
-        ]),
-        _default_scopes='email',
-        user_id=user.id,
-    )
-    db.session.add(item)
-    db.session.commit()
-    return jsonify(
-        client_id=item.client_id,
-        client_secret=item.client_secret,
-    )
+    if token and not token.is_expired():
+        log.info("Reuse access token: {} expiring on {} ({} seconds left)"
+                 .format(token.id, token.expires, token.expires_in))
+        result_token = token
+    else:
+        access_token = utils.generate_token()
 
+        # access_token = utils.generate_token_urandom(TOKEN_LENGTH)
+        expires = datetime.utcnow() + timedelta(seconds=TOKEN_EXPIRES_SECONDS)
+        added_at = utils.get_db_friendly_date_time()
 
-@app.route('/oauth/token', methods=['GET', 'POST'])
+        if token:
+            result_token = OauthAccessTokenEntity.update(
+                token,
+                access_token=access_token,
+                expires=expires,
+                added_at=added_at)
+        else:
+            result_token = OauthAccessTokenEntity.create(
+                access_token=access_token,
+                token_type=TOKEN_TYPE_BEARER,
+                _scopes='',
+                expires=expires,
+                client_id=req.client.client_id,
+                added_at=added_at
+            )
+    log.info("return from save_token: {}".format(result_token))
+    return result_token
+
+@app.route('/oauth/token', methods=['POST', 'GET'])
 @oauth.token_handler
-def access_token():
+def handle_request_auth_token():
+    """
+    The dictionary returned by this method is passed to the meth:`save_token`
+    in order to be saved
+    """
+    if request.method == 'POST':
+        client_id = request.form.get('client_id')
+        client_secret = request.form.get('client_secret')
+    else:
+        client_id = request.args.get('client_id')
+        client_secret = request.args.get('client_secret')
+
+    if client_id is None:
+        raise Exception("Error: Missing client_id")
+    if client_secret is None:
+        raise Exception("Error: Missing client_secret")
+
+    client = OauthClientEntity.query.filter_by(
+        client_id=client_id).one_or_none()
+
+    if client is None:
+        raise Exception("Error: invalid client_id")
+
+    if client.client_secret != client_secret:
+        raise Exception("Error: invalid client_secret")
+
+    token = OauthAccessTokenEntity.query.filter_by(
+        client_id=client_id,
+        token_type=TOKEN_TYPE_BEARER).one_or_none()
+
+    log.info("return from handle_request_auth_token(): {}".format(token))
+    return token.serialize() if token else {}
+
+
+@app.route('/me', methods=['POST', 'GET'])
+@oauth.require_oauth()
+def me():
+    user = request.oauth.user
+    return utils.jsonify_success({
+        'user': user.serialize(),
+        'client': request.oauth.client.serialize()
+    })
+
+
+@oauth.grantgetter
+def load_grant(client_id, code):
+    log.debug("==> load_grant()")
     return None
 
 
-@app.route('/oauth/authorize', methods=['GET', 'POST'])
-@oauth.authorize_handler
-def authorize(*args, **kwargs):
-    user = current_user
+@oauth.grantsetter
+def save_grant(client_id, code, req):
+    log.debug("==> save_grant()")
+    return None
 
-    if not user:
-        return redirect('/')
 
-    if request.method == 'GET':
-        client_id = kwargs.get('client_id')
-        client = Client.query.filter_by(client_id=client_id).first()
-        kwargs['client'] = client
-        kwargs['user'] = user
-        return render_template('authorize.html', **kwargs)
-
-    confirm = request.form.get('confirm', 'no')
-    return confirm == 'yes'
+# @app.route('/oauth/authorize', methods=['GET', 'POST'])
+# def authorize(*args, **kwargs):
+#     user = current_user()
+#     log.info(user)
+#
+#     if not user:
+#         return redirect('/')
+#
+#     if request.method == 'GET':
+#         client_id = request.args.get('client_id')
+#         response_type = request.args.get('response_type')
+#         redirect_uri = request.args.get('redirect_uri')
+#
+#         client = OauthClientEntity.query.filter_by(client_id=client_id).one()
+#         log.info("Client found from {}: {}".format(client_id, client))
+#         kwargs['client'] = client
+#         kwargs['user'] = user
+#         kwargs['response_type'] = response_type
+#         kwargs['redirect_uri'] = redirect_uri
+#
+#         return render_template('authorize.html', **kwargs)
+#
+#     confirm = request.form.get('confirm', 'no')
+#     return confirm == 'yes'

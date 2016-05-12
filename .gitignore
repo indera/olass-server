@@ -31,3 +31,4 @@ pylint.out
 
 app/ssl/server.key
 app/ssl/server.crt
+app/client/
