@@ -5,6 +5,7 @@ Authors:
      Andrei Sura <sura.andrei@gmail.com>
 """
 # import uuid
+from binascii import unhexlify
 from binascii import hexlify
 from base_test import BaseTestCase
 from olass import utils
@@ -14,13 +15,12 @@ from olass.main import db
 # ROLE_SITE_USER
 # from olass.models.role_entity import RoleEntity
 
-from sqlalchemy.orm.exc import NoResultFound
+# from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 from olass.models.person import Person
 from olass.models.partner_entity import PartnerEntity
-from olass.models.rule_entity import RuleEntity
-from olass.models.rule_entity import RULE_CODE_F_L_D_Z
+
 from olass.models.linkage_entity import LinkageEntity
 
 from olass.models.oauth_user_entity import OauthUserEntity
@@ -31,6 +31,42 @@ from olass.models.oauth_client_entity import OauthClientEntity
 from olass.models.oauth_grant_code_entity import OauthGrantCodeEntity
 from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
 
+# _1 First Name + Last Name + DOB + Zip
+RULE_CODE_F_L_D_Z = 'F_L_D_Z'
+
+# _2 Last Name + First Name + DOB + Zip
+RULE_CODE_L_F_D_Z = 'L_F_D_Z'
+
+# _3 First Name + Last Name + DOB + City
+RULE_CODE_F_L_D_C = 'F_L_D_C'
+
+# _4 Last Name + First Name + DOB + City
+RULE_CODE_L_F_D_C = 'L_F_D_C'
+
+# _5 Three Letter FN + Three Letter LN + Soundex FN + Soundex LN + DOB
+RULE_CODE_3F_3L_SF_SL_D = '3F_3L_SF_SL_D'
+
+RULE_MAP = {
+    RULE_CODE_F_L_D_Z: '{0.first}{0.last}{0.dob}{0.zip}',
+    RULE_CODE_L_F_D_Z: '{0.last}{0.first}{0.dob}{0.zip}',
+}
+
+
+def get_person_hash(person, rules):
+    """
+    Get a dictionary of unhexlified hashes for a person object
+    """
+    hashes = {}
+
+    for rule in rules:
+        pattern = RULE_MAP.get(rule)
+        raw = pattern.format(person)
+        unhex = unhexlify(utils.apply_sha256(raw))
+        hashes[rule] = unhex
+        # print("Apply unhexlify(sha256({})) = {}".format(raw, unhex))
+
+    return hashes
+
 
 class BaseTestCaseWithData(BaseTestCase):
 
@@ -39,7 +75,6 @@ class BaseTestCaseWithData(BaseTestCase):
     def setUp(self):
         db.create_all()
         self.create_partners()
-        self.create_rules()
         self.create_sample_data()
         self.create_oauth_users()
 
@@ -70,21 +105,6 @@ class BaseTestCaseWithData(BaseTestCase):
                     partner_description.like(
                         '%Florida%')).one()
 
-    def create_rules(self):
-        """
-        Create rows
-        """
-        added_date = utils.get_db_friendly_date_time()
-
-        with self.assertRaises(NoResultFound):
-                RuleEntity.query.filter_by(id=1).one()
-
-        rule = RuleEntity.create(
-            rule_code=RULE_CODE_F_L_D_Z,
-            rule_description='First Last Date Zip',
-            rule_added_at=added_date)
-        self.assertEquals(1, rule.id)
-
     def create_sample_data(self):
         """ Add some data """
         added_date = utils.get_db_friendly_date_time()
@@ -105,19 +125,16 @@ class BaseTestCaseWithData(BaseTestCase):
 
         partner = PartnerEntity.query.filter_by(
             partner_code='UF').one()
-        rule = RuleEntity.query.filter_by(
-            rule_code=RULE_CODE_F_L_D_Z).one()
 
         for person_data in sample_data:
             person_orig = Person(person_data)
             person = Person.get_prepared_person(person_data)
             pers_uuid = utils.get_uuid_hex()
-            hashes = utils.get_person_hash(person, [rule])
+            hashes = get_person_hash(person, [RULE_CODE_F_L_D_Z])
 
             for rule_id, ahash in hashes.items():
                 link = LinkageEntity.create(
                     partner_id=partner.id,
-                    rule_id=rule_id,
                     linkage_uuid=pers_uuid,
                     linkage_hash=ahash,
                     linkage_addded_at=added_date)
