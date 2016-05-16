@@ -101,7 +101,7 @@ def coverage():
 @task
 def lint():
     run("which pylint || pip install pylint")
-    run("pylint -f parseable olass | tee pylint.out")
+    run("pylint -f parseable olass")
 
 
 @task
@@ -111,6 +111,7 @@ def clean():
     """
     run('find . -type f -name "*.pyc" -print | xargs rm -f')
     run('rm -rf htmlcov/ .coverage pylint.out')
+    run('rm -rf .tox/*')
 
 
 if __name__ == '__main__':
