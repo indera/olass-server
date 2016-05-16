@@ -1,6 +1,8 @@
 """
 Goal: set the environment for tests
-Docs: https://pythonhosted.org/Flask-SQLAlchemy/quickstart.html
+Docs:
+    http://pythonhosted.org/Flask-Testing/
+    https://pythonhosted.org/Flask-SQLAlchemy/quickstart.html
 
 The only things you need to know compared to plain SQLAlchemy are:
 

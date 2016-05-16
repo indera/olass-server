@@ -108,7 +108,7 @@ def load_token(access_token=None, refresh_token=None):
         log.info('Loaded token [{}] for user [{}]'
                  .format(tok.id, tok.client))
     else:
-        log.warn('Unable to load token for validate_bearer_token()')
+        log.warning('Unable to load token for validate_bearer_token()')
     return tok
 
 @oauth.tokensetter
