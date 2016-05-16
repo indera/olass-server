@@ -5,6 +5,7 @@
 *.swp
 *.swo
 .cache/
+.tox/
 private/
 venv/
 htmlcov/
