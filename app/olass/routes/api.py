@@ -124,6 +124,8 @@ def api_save_patient_hashes():
             uuid = uuids.pop()
             app.logger.info("Reusing the uuid [{}]".format(uuid))
 
+            link = None
+
             for chunk_data in pat_chunks:
                 # link every chunk to the same uuid
                 chunk = chunk_data['chunk']
@@ -140,7 +142,7 @@ def api_save_patient_hashes():
                         linkage_uuid=binary_uuid,
                         linkage_hash=binary_hash,
                         linkage_addded_at=added_date)
-                result[pat_id][chunk] = {"uuid": link.friendly_uuid()}
+            result[pat_id] = {"uuid": link.friendly_uuid()}
 
         else:
             app.logger.error("It looks like we got a collision for chunks: {}"
