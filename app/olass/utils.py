@@ -14,7 +14,6 @@ import json
 import hmac
 import base64
 import pytz as tz
-import olass.models.rule_entity as rul
 
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer
@@ -35,10 +34,6 @@ UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                                '0123456789')
 
-RULE_MAP = {
-    rul.RULE_CODE_F_L_D_Z: '{0.first}{0.last}{0.dob}{0.zip}',
-    rul.RULE_CODE_L_F_D_Z: '{0.last}{0.first}{0.dob}{0.zip}',
-}
 
 # table of punctuation characters + space
 tbl = dict.fromkeys(i for i in range(sys.maxunicode)
@@ -78,7 +73,7 @@ def get_uuid_hex(uuid_text=None):
     return unhexlify(str(uuid_text).replace('-', '').lower().encode())
 
 
-def _sha256(val):
+def apply_sha256(val):
     """ Compute sha256 sum
     :param val: the input string
     :rtype string: the sha256 hexdigest
@@ -86,23 +81,6 @@ def _sha256(val):
     m = sha256()
     m.update(val.encode('utf-8'))
     return m.hexdigest()
-
-
-def get_person_hash(person, rules):
-    """
-    Get a dictionary of unhexlified hashes for a person object
-    """
-    hashes = {}
-
-    for rule in rules:
-        pattern = RULE_MAP.get(rule.rule_code)
-        # print("Rule code: {}, pattern: {}" .format(rule.rule_code, pattern))
-        raw = pattern.format(person)
-        unhex = unhexlify(_sha256(raw))
-        hashes[rule.rule_code] = unhex
-        # print("Apply unhexlify(sha256({})) = {}".format(raw, unhex))
-
-    return hashes
 
 
 def replace_all(text, replacements):
