@@ -36,28 +36,43 @@ def api_save_patient_hashes():
 == Example of input json:
 {
   "partner_code": "UF",
-  "data":
-{
+  "data": {
 "1":
-[{"chunk_num": "1",
-  "chunk": "8a31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506"},
- {"chunk_num": "2",
+   [{"chunk_num": "1",
+   "chunk": "8b31efa965d46f971426ac9c133db1c769a712657b74410016d636b10a996506"}
+   ],
+"2":
+   [{"chunk_num": "1",
    "chunk": "db07840bf253e5e6c16cabaca97fcc4363643f8552d65ec04290f3736d72b27d"},
- {"chunk_num": "3",
+   {"chunk_num": "2",
    "chunk": "c79db51a3f0037ef83f45b4a85bc519665dbf9de8adf9f47d4a73a0c5bb91caa"}
- ]
+   ]
 }
 }
 
 == Example of output json:
 {
-"status": "success",
-"data": {
-    "1": {"uuid": "4d4f951c0beb11e68fb0f45c898e9b67"},
-    "2": {"uuid": "..."},
-    ...
-    }
+    "data": {
+        "1": {
+            "uuid": "ebd9ae1a1ba011e694c84d46767d11db"
+        },
+        "2": {
+            "uuid": "ebd9b9d21ba011e694c84d46767d11db"
+        }
+    },
+    "status": "success"
 }
+
+== Rows in db
+select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
++----------------------------------+------------------
+| hex(linkage_uuid)                | hex(linkage_hash)
++----------------------------------+------------------
+| ebd9ae1a1ba011e694c84d46767d11db | 8b31efa965d46f971 ...
+| ebd9b9d21ba011e694c84d46767d11db | db07840bf253e5e6c ...
+| ebd9b9d21ba011e694c84d46767d11db | c79db51a3f0037ef8 ...
++----------------------------------+------------------
+
     """
     json = request.get_json(silent=False)
 
