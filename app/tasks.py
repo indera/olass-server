@@ -100,7 +100,7 @@ def coverage():
 
 @task
 def lint():
-    # run("which pylint || sudo pip install pylint")
+    run("which pylint || pip install pylint")
     run("pylint -f parseable olass | tee pylint.out")
 
 
