@@ -5,6 +5,7 @@ Authors:
      Andrei Sura <sura.andrei@gmail.com>
 """
 # import uuid
+from mock import patch
 from binascii import unhexlify
 from binascii import hexlify
 from base_test import BaseTestCase
@@ -31,6 +32,10 @@ from olass.models.oauth_client_entity import OauthClientEntity
 from olass.models.oauth_grant_code_entity import OauthGrantCodeEntity
 from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
 
+
+VERBOSE = False
+COUNT = 0
+
 # _1 First Name + Last Name + DOB + Zip
 RULE_CODE_F_L_D_Z = 'F_L_D_Z'
 
@@ -50,6 +55,11 @@ RULE_MAP = {
     RULE_CODE_F_L_D_Z: '{0.first}{0.last}{0.dob}{0.zip}',
     RULE_CODE_L_F_D_Z: '{0.last}{0.first}{0.dob}{0.zip}',
 }
+
+
+def verbose(msg):
+    if VERBOSE:
+        print("==> {}".format(msg))
 
 
 def get_person_hash(person, rules):
@@ -93,8 +103,8 @@ class BaseTestCaseWithData(BaseTestCase):
             partner_description="Florida Hospital",
             partner_added_at=added_date)
 
-        self.assertEquals(1, partner_uf.id)
-        self.assertEquals(2, partner_fh.id)
+        self.assertIsNotNone(partner_uf.id)
+        self.assertIsNotNone(partner_fh.id)
         self.assertEquals("UF", partner_uf.partner_code)
         self.assertEquals("FH", partner_fh.partner_code)
 
@@ -105,6 +115,17 @@ class BaseTestCaseWithData(BaseTestCase):
                     partner_description.like(
                         '%Florida%')).one()
 
+    def dummy_get_uuid_hex(*args, **kwargs):
+        """
+        Patch the get_uuid_hex() so we can get predictable UUIDs
+        usable in test_integration.py
+        """
+        global COUNT
+        COUNT = COUNT + 1 if COUNT < 8 else 0
+        uuid_text = "{}09949141ba811e69454f45c898e9b67".format(COUNT)
+        return unhexlify(str(uuid_text).replace('-', '').lower().encode())
+
+    @patch.multiple(utils, get_uuid_hex=dummy_get_uuid_hex)
     def create_sample_data(self):
         """ Add some data """
         added_date = utils.get_db_friendly_date_time()
@@ -130,7 +151,8 @@ class BaseTestCaseWithData(BaseTestCase):
             person_orig = Person(person_data)
             person = Person.get_prepared_person(person_data)
             pers_uuid = utils.get_uuid_hex()
-            hashes = get_person_hash(person, [RULE_CODE_F_L_D_Z])
+            hashes = get_person_hash(person,
+                                     [RULE_CODE_F_L_D_Z, RULE_CODE_L_F_D_Z])
 
             for rule_id, ahash in hashes.items():
                 link = LinkageEntity.create(
@@ -143,10 +165,11 @@ class BaseTestCaseWithData(BaseTestCase):
                 links_by_hash = LinkageEntity.query.filter_by(
                     linkage_hash=ahash).all()
 
-                print("==> Found {} link(s) for [{}] using hash: {}".format(
-                    len(links_by_hash),
-                    person_orig,
-                    hexlify(ahash)))
+                verbose("==> Found {} link(s) for [{}] using hash: {}"
+                        .format(
+                            len(links_by_hash),
+                            person_orig,
+                            hexlify(ahash)))
 
     def create_oauth_users(self):
         """ Add user, role, user_role
@@ -164,7 +187,7 @@ class BaseTestCaseWithData(BaseTestCase):
         self.assertEquals(1, role.id)
         role = OauthRoleEntity.get_by_id(1)
         self.assertIsNotNone(role)
-        print("Expect: {}".format(role))
+        verbose(role)
 
         ##############
         # add user row
@@ -173,12 +196,12 @@ class BaseTestCaseWithData(BaseTestCase):
             added_at=added_at
         )
         self.assertEquals(1, user.id)
-        print("Expect: {}".format(user))
+        verbose(user)
 
         ##############
         # add user_role row
         partner = PartnerEntity.query.filter_by(partner_code="UF").one()
-        print("Expect: {}".format(partner))
+        verbose(partner)
 
         user_role = OauthUserRoleEntity.create(
             partner_id=partner.id,
@@ -188,14 +211,14 @@ class BaseTestCaseWithData(BaseTestCase):
         )
         user_role = OauthUserRoleEntity.get_by_id(1)
         self.assertIsNotNone(user_role)
-        print("Expect: {}".format(user_role))
+        verbose(user_role)
 
         ##############
         # Verify that the user now is properly mapped to a partner and a role
         user = OauthUserEntity.get_by_id(1)
         self.assertIsNotNone(user.partner)
         self.assertIsNotNone(user.role)
-        print("Expect: {}".format(user))
+        verbose(user)
 
         ##############
         # Verify that we can save a client, grant code, access token
@@ -243,7 +266,7 @@ class BaseTestCaseWithData(BaseTestCase):
         self.assertIsNotNone(client2)
         self.assertIsNotNone(grant)
         self.assertIsNotNone(role)
-        print("Expect client: {}".format(client))
-        print("Expect grant: {}".format(grant))
-        print("Expect token: {}".format(token))
-        print("Expect token serialized: {}".format(token.serialize()))
+        verbose("Expect client: {}".format(client))
+        verbose("Expect grant: {}".format(grant))
+        verbose("Expect token: {}".format(token))
+        verbose("Expect token serialized: {}".format(token.serialize()))

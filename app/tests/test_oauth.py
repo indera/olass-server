@@ -62,7 +62,7 @@ class TestOauth(BaseTestCaseWithData):
 
                 # Trigger execution of before_request()
                 # app.preprocess_request()
-                print("Request access token from: {}".format(token_request_url))
+                print("\nRequest access from: {}".format(token_request_url))
                 response = client.post(token_request_url,
                                        data=token_request_data_ok)
                 access_token = response.json.get('access_token')

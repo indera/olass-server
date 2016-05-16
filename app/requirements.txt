@@ -10,10 +10,11 @@ Flask-Testing
 PyMySQL
 SQLAlchemy
 
+mock
 pyOpenSSL
 pytest
+pytest-cov
 pytz
-
 
 # utility functions in tasks.py 
 colorama
