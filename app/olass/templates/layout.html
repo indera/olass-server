@@ -5,13 +5,70 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OLASS Server version 0.0.1 </title>
+    <title>OLASS</title>
+
+
+    <link href="{{ url_for('static', filename='css/layout.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css">
+
+    
+    <script type="text/javascript" src=""></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+    {% block scripts %}
+        <!-- allow to insert page specific js -->
+    {% endblock %}
   </head>
 
 <body>
-    <div id="wrapper">
-        {% block content %}
-        {% endblock %}
+	<nav class="navbar">
+		<div class="navbar-header">
+			<div class="navbar-brand" href="/">
+				<a href="/">OneFlorida Entity Resolution Server</a>
+				{% if current_user.is_authenticated %}
+					<i title="Logged in as {{ current_user.email }}"></i>
+				{% endif %}
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">
+		<div class="col-sm-12 col-md-12 col-lg-12 main-content">
+			{% with errors = get_flashed_messages(category_filter=["error"]) %}
+				{% if errors %}
+					<div class="alert-message block-message error">
+						<a class="close" href="#">×</a>
+						<ul>
+							{%- for msg in errors %}
+							<li>{{ msg }}</li>
+							{% endfor -%}
+						</ul>
+					</div>
+				{% endif %}
+			{% endwith %}
+
+			{% block content %}
+			{% endblock %}
+		</div>
+
+		<div class="row">
+			<div class="col-sm-9 col-md-9 col-lg-9 entityresolution">
+				<p> Please login</p>
+
+				{% block login %}
+				{% endblock %}
+			</div>
+		</div>
+	</div>
+
+
+    <div class="navbar-default navbar-fixed-bottom">
+        <div class="container text-center footer">
+<a href="https://https://health-outcomes-policy.ufl.edu/education/graduate-certificate-in-biomedical-informatics/">BMI Program</a>
+            at the University of Florida
+            &middot; All Rights Reserved
+            &middot; <a href="https://github.com/ufbmi/olass-server/tree/{{config['APP_VERSION']}}">Version {{config['APP_VERSION']}}</a>
+        </div>
     </div>
+
 </body>
 </html>
