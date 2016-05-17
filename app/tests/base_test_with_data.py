@@ -6,6 +6,7 @@ Authors:
 """
 # import uuid
 from mock import patch
+from hashlib import sha256
 from binascii import unhexlify
 from binascii import hexlify
 from base_test import BaseTestCase
@@ -62,6 +63,16 @@ def verbose(msg):
         print("==> {}".format(msg))
 
 
+def apply_sha256(val):
+    """ Compute sha256 sum
+    :param val: the input string
+    :rtype string: the sha256 hexdigest
+    """
+    m = sha256()
+    m.update(val.encode('utf-8'))
+    return m.hexdigest()
+
+
 def get_person_hash(person, rules):
     """
     Get a dictionary of unhexlified hashes for a person object
@@ -71,7 +82,7 @@ def get_person_hash(person, rules):
     for rule in rules:
         pattern = RULE_MAP.get(rule)
         raw = pattern.format(person)
-        unhex = unhexlify(utils.apply_sha256(raw))
+        unhex = unhexlify(apply_sha256(raw))
         hashes[rule] = unhex
         # print("Apply unhexlify(sha256({})) = {}".format(raw, unhex))
 

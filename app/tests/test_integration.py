@@ -58,7 +58,7 @@ class TestIntegration(BaseTestCaseWithData):
 
                 # Now use the retrieved access token
                 auth_headers = [
-                    ('access_token', access_token),
+                    ('Authorization', "Basic: {}".format(access_token)),
                     ('Content-Type', 'application/json')]
 
                 # Test_1 bad json

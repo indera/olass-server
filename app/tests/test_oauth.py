@@ -10,6 +10,10 @@ from base_test_with_data import BaseTestCaseWithData
 from olass.main import app
 
 
+token_request_url = 'https://localhost/oauth/token'
+private_url = 'https://localhost/api/me'
+
+
 class TestOauth(BaseTestCaseWithData):
 
     def test_me(self):
@@ -17,7 +21,6 @@ class TestOauth(BaseTestCaseWithData):
         Verify that without an access token we can't access
         restricted routes.
         """
-        private_url = 'https://localhost/me'
 
         with self.app.test_request_context():
             with app.test_client() as client:
@@ -32,9 +35,6 @@ class TestOauth(BaseTestCaseWithData):
         Verify that we can request an access token and use it
         to access a restricted resource.
         """
-        private_url = 'https://localhost/me'
-        token_request_url = 'https://localhost/oauth/token'
-
         token_request_data_ok = {
             'client_id': 'client_1',
             'client_secret': 'secret_1',
