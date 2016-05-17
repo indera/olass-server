@@ -13,6 +13,7 @@ SQLAlchemy
 WTForms
 
 mock
+passlib
 pyOpenSSL
 pytest
 pytest-cov
