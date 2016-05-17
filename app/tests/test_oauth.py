@@ -66,7 +66,7 @@ class TestOauth(BaseTestCaseWithData):
                 response = client.post(token_request_url,
                                        data=token_request_data_ok)
                 access_token = response.json.get('access_token')
-                print("Retrived access token: {}".format(access_token))
+                print("Retrieved access token: {}".format(access_token))
 
                 # Now use the retrieved access token
                 query_data = {'access_token': access_token}

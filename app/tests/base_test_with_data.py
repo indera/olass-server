@@ -147,6 +147,7 @@ class BaseTestCaseWithData(BaseTestCase):
         partner = PartnerEntity.query.filter_by(
             partner_code='UF').one()
 
+        # Note: first four entries produce the same hashes (aka chunks)
         for person_data in sample_data:
             person_orig = Person(person_data)
             person = Person.get_prepared_person(person_data)

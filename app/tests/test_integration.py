@@ -5,12 +5,15 @@ Authors:
     Andrei Sura <sura.andrei@gmail.com>
 
 """
+from mock import patch
 from base_test_with_data import BaseTestCaseWithData
 from olass.main import app
+from olass import utils
 
 
 class TestIntegration(BaseTestCaseWithData):
 
+    @patch.multiple(utils, get_uuid_hex=BaseTestCaseWithData.dummy_get_uuid_hex)
     def test_success(self):
         token_request_url = 'https://localhost/oauth/token'
         token_request_data_ok = {
@@ -21,6 +24,7 @@ class TestIntegration(BaseTestCaseWithData):
 
         # The route for saving chunks
         save_patient_chunks_url = 'https://localhost/api/save'
+
         chunks = """
 {
   "partner_code": "UF",
@@ -34,6 +38,10 @@ class TestIntegration(BaseTestCaseWithData):
    "chunk": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"},
    {"chunk_num": "2",
    "chunk": "1dcce10470c0ea73a8a6287f69f4f862c5e13faea7c11104fae07dbc8d5ce56e"}
+   ],
+"3":
+   [{"chunk_num": "1",
+   "chunk": "995b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"}
    ]
 }
 }
@@ -46,12 +54,28 @@ class TestIntegration(BaseTestCaseWithData):
                 response = client.post(token_request_url,
                                        data=token_request_data_ok)
                 access_token = response.json.get('access_token')
-                print("Retrived access token: {}".format(access_token))
+                print("Retrieved access token: {}".format(access_token))
 
                 # Now use the retrieved access token
                 auth_headers = [
                     ('access_token', access_token),
                     ('Content-Type', 'application/json')]
+
+                # Test_1 bad json
+                bad_response = client.post(save_patient_chunks_url,
+                                           data='{"a": "b",}',
+                                           headers=auth_headers)
+                # Verify that we get a "400 BAD REQUEST"
+                # response for invalid json
+                self.assert400(bad_response, "Response code is not 400")
+
+                # Test_2 KeyError 'data'
+                with self.assertRaises(Exception):
+                    bad_response = client.post(save_patient_chunks_url,
+                                               data='{"partner_code": "UF"}',
+                                               headers=auth_headers)
+
+                # Test_3 valid request
                 response = client.post(save_patient_chunks_url,
                                        data=chunks,
                                        headers=auth_headers)
@@ -64,6 +88,7 @@ class TestIntegration(BaseTestCaseWithData):
                 if 'success' == status:
                     group_1 = data.get('1')
                     group_2 = data.get('2')
+                    group_3 = data.get('3')
 
                     # compare the UUIDs generated using
                     # base_test_with_data#dummy_get_uuid_hex()
@@ -74,6 +99,11 @@ class TestIntegration(BaseTestCaseWithData):
                     self.assertEqual(
                         group_2.get('uuid'),
                         '209949141ba811e69454f45c898e9b67')
+
+                    self.assertEqual(
+                        group_3.get('uuid'),
+                        '409949141ba811e69454f45c898e9b67')
+
                 else:
                     self.fail("Error response: {}".format(data))
 

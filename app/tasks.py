@@ -91,11 +91,12 @@ def test():
     run('PYTHONPATH="." py.test -v --tb=short -s tests/ --color=yes')
 
 
-@task
+@task(aliases=['cov'])
 def coverage():
     """ Create coverage report """
     run('PYTHONPATH="." py.test --tb=short -s --cov olass '
         ' --cov-report term-missing --cov-report html tests/')
+    run('open htmlcov/index.html')
 
 
 @task
