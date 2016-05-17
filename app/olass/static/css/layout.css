@@ -1,0 +1,47 @@
+
+div.entityresolution {
+	margin-top: 4em;
+	padding: 7em;
+    background-image: url(/static/img/entityresolution.jpg);
+    background-repeat: no-repeat;
+	height: 80%;
+}
+
+/*
+th.header {
+    background-image: url(/static/img/small.gif);
+    background-repeat: no-repeat;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+th.header:hover {
+    background-color: #efefef;
+}
+
+
+th.header.headerSortUp {
+    background-image: url(/static/img/small_asc.gif);
+}
+
+th.header.headerSortDown {
+    background-image: url(/static/img/small_desc.gif);
+}
+
+table.borderless td, table.borderless th {
+    border: none !important;
+}
+
+.bordered {
+    border: solid 1px black;
+}
+*/
+
+.navbar, .footer {
+    background: #efefef;
+}
+
+.footer {
+    padding: 5px;
+}
+
