@@ -50,26 +50,20 @@ import logging
 from datetime import datetime, timedelta
 from flask_oauthlib.provider import OAuth2Provider
 from flask import request
-# from werkzeug.security import gen_salt
-# from flask import Response
-# from flask import url_for
-# from flask import session
-# from flask import render_template, redirect
 # from flask_login import login_required
 # from flask_login import current_user
 
 from olass import utils
 from olass.main import app
 
-# from olass.models.oauth_user_entity import OauthUserEntity
 from olass.models.oauth_client_entity import OauthClientEntity
 from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
 
 TOKEN_TYPE_BEARER = 'Bearer'
 
 # TODO: read this options from config file
-TOKEN_EXPIRES_SECONDS = 36000
-TOKEN_LENGTH = 40
+TOKEN_EXPIRES_SECONDS = 36000  # 10 hours
+TOKEN_LENGTH = 40  # max 255
 
 log = app.logger
 flog = logging.getLogger('flask_oauthlib')
@@ -111,6 +105,7 @@ def load_token(access_token=None, refresh_token=None):
         log.warning('Unable to load token for validate_bearer_token()')
     return tok
 
+
 @oauth.tokensetter
 def save_token(token_props, req, *args, **kwargs):
     """
@@ -150,6 +145,7 @@ def save_token(token_props, req, *args, **kwargs):
     log.info("return from save_token: {}".format(result_token))
     return result_token
 
+
 @app.route('/oauth/token', methods=['POST', 'GET'])
 @oauth.token_handler
 def handle_request_auth_token():
@@ -186,16 +182,6 @@ def handle_request_auth_token():
     return token.serialize() if token else {}
 
 
-@app.route('/me', methods=['POST', 'GET'])
-@oauth.require_oauth()
-def me():
-    user = request.oauth.user
-    return utils.jsonify_success({
-        'user': user.serialize(),
-        'client': request.oauth.client.serialize()
-    })
-
-
 @oauth.grantgetter
 def load_grant(client_id, code):
     log.debug("==> load_grant()")
@@ -206,29 +192,3 @@ def load_grant(client_id, code):
 def save_grant(client_id, code, req):
     log.debug("==> save_grant()")
     return None
-
-
-# @app.route('/oauth/authorize', methods=['GET', 'POST'])
-# def authorize(*args, **kwargs):
-#     user = current_user()
-#     log.info(user)
-#
-#     if not user:
-#         return redirect('/')
-#
-#     if request.method == 'GET':
-#         client_id = request.args.get('client_id')
-#         response_type = request.args.get('response_type')
-#         redirect_uri = request.args.get('redirect_uri')
-#
-#         client = OauthClientEntity.query.filter_by(client_id=client_id).one()
-#         log.info("Client found from {}: {}".format(client_id, client))
-#         kwargs['client'] = client
-#         kwargs['user'] = user
-#         kwargs['response_type'] = response_type
-#         kwargs['redirect_uri'] = redirect_uri
-#
-#         return render_template('authorize.html', **kwargs)
-#
-#     confirm = request.form.get('confirm', 'no')
-#     return confirm == 'yes'
