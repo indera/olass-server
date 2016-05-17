@@ -60,7 +60,12 @@ class DefaultConfig(object):
 
 
 class DebugConfig(DefaultConfig):
-    """ Extend the default config with options useful during debugging """
+    """
+    Extend the default config with options useful during debugging.
+
+    Note: the options in CONFIDENTIAL_SETTINGS_FILE
+           will override what we set in this method.
+    """
     LOG_LEVEL = logging.DEBUG
     DEBUG = True
     DEBUG_TB_ENABLED = True
