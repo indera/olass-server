@@ -4,11 +4,13 @@ Flask-DebugToolbar
 Flask-Login
 Flask-OAuthlib
 Flask-SQLAlchemy
+Flask-Principal
 Flask-Testing
 
 # @see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html
 PyMySQL
 SQLAlchemy
+WTForms
 
 mock
 pyOpenSSL

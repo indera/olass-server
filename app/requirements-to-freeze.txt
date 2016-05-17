@@ -3,12 +3,14 @@ Flask==0.10.1
 Flask-DebugToolbar==0.10.0
 Flask-Login==0.3.2
 Flask-OAuthlib==0.9.2
+Flask-Principal==0.4.0
 Flask-SQLAlchemy==2.1
 Flask-Testing==0.4.2
 
 # @see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html
 PyMySQL==0.7.2
 SQLAlchemy==1.0.12
+WTForms==2.1
 
 mock==2.0.0
 pyOpenSSL==0.15.1
