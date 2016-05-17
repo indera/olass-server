@@ -7,28 +7,40 @@ Goal: Delegate requests to the `/api` path to the appropriate controller
 import collections
 from binascii import unhexlify
 from flask import request
-# from flask import session
-# from flask import make_response
-# from flask_login import login_required
+from flask_login import login_required
+from flask_login import current_user
 
 from olass import utils
 from olass.main import app
 from olass.models.partner_entity import PartnerEntity
 from olass.models.linkage_entity import LinkageEntity
 
+from .oauth import oauth as auth
 log = app.logger
 
 
 @app.route('/api/', methods=['POST', 'GET'])
-# @login_required
-def api_hello():
+@app.route('/api/hello', methods=['POST', 'GET'])
+@login_required
+def say_hello():
     """ Say hello """
     return utils.jsonify_success({
-        'message': 'Hello'
+        'message': 'Hello {}! You are logged in.'.format(current_user.email)
+    })
+
+
+@app.route('/api/me', methods=['POST', 'GET'])
+@auth.require_oauth()
+def me():
+    user = request.oauth.user
+    return utils.jsonify_success({
+        'user': user.serialize(),
+        'client': request.oauth.client.serialize()
     })
 
 
 @app.route('/api/save', methods=['POST', 'GET'])
+@auth.require_oauth()
 def api_save_patient_hashes():
     """
     For each chunk save a new uuid or return an existing one from the database.
@@ -74,6 +86,7 @@ select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
 +----------------------------------+------------------
 
     """
+    log.debug('request.headers: {}'.format(request.headers))
     json = request.get_json(silent=False)
 
     if not json:

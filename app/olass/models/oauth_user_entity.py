@@ -3,8 +3,15 @@ ORM for "oauth_user"
 
 @authors:
     Andrei Sura <sura.andrei@gmail.com>
+
+
+Note: we use passlib for password hashing/verification
+    https://pythonhosted.org/passlib/new_app_quickstart.html
 """
 
+from passlib.apps import custom_app_context as pwd_context
+
+from flask_login import UserMixin
 from olass.models.crud_mixin import CRUDMixin
 from olass.main import db
 from olass.models.partner_entity import PartnerEntity
@@ -26,7 +33,8 @@ from olass.models.oauth_user_role_entity import OauthUserRoleEntity
 +---------------+--------------+------+-----+---------+----------------+
 """
 
-class OauthUserEntity(db.Model, CRUDMixin):
+
+class OauthUserEntity(db.Model, UserMixin, CRUDMixin):
     """
     A user, or resource owner, is usually the registered user on your site.
     """
@@ -58,6 +66,23 @@ class OauthUserEntity(db.Model, CRUDMixin):
         backref=db.backref('oauth_user'),
         uselist=False,
     )
+
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        """ Return true if password matches the stored hash """
+        return pwd_context.verify(password, self.password_hash)
+
+    # def is_authenticated(self):
+    #     """ Returns True if the user is authenticated, i.e. they have provided
+    #     valid credentials.
+    #     """
+    #     return True
+
+    # def is_anonymous(self):
+    #     """ Flag instances of valid users """
+    #     return False
 
     def serialize(self):
         """ Helper for sending data in http responses """
