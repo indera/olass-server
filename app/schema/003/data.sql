@@ -1,10 +1,11 @@
 
+-- Add users with the hashed password
 INSERT INTO oauth_user
-    (email, added_at)
+    (email, added_at, password_hash)
 VALUES
-    ('asura-root@ufl.edu', NOW()),
-    ('asura-admin@ufl.edu', NOW()),
-    ('asura-staff@ufl.edu', NOW())
+    ('asura-root@ufl.edu', NOW(), '$6$rounds=666140$vQVDNQUwZCSDY0u7$kqmaQjQnYwWz9EQlms99UQDYaphVBwujnUs1H3XdhT741pY1HPirG1Y.oydcw3QtQnaMyVOspVZ20Dij7f24A/'),
+    ('asura-admin@ufl.edu', NOW(), '$6$rounds=721306$o0JYbytB8UBzi.ap$ZJONXx83jYYi0atrdEloFJR7QK6j/5U3UJJv3t674.EeBRJ.Bu711lBGQZJA9hCaI.5MqUbiRHztj0moBCE3W0'),
+    ('asura-staff@ufl.edu', NOW(), '$6$rounds=617908$4Flg0hww8CK5oDWU$FwGNlWtzTnl0WWrqNvAR/NLW9WNMQQgkM.dXgbFKhTGKZ1037Ev4BS/DxopiSMDw97PnlNDqDRLFL976qL4691')
 ;
 
 
