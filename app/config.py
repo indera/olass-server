@@ -75,6 +75,7 @@ class DebugConfig(DefaultConfig):
 
 class TestConfig(DefaultConfig):
     """ Configuration for running tests """
+    # PRESERVE_CONTEXT_ON_EXCEPTION = False
     TESTING = True
     CSRF_ENABLED = False
     CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR,

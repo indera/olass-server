@@ -75,6 +75,7 @@ def index():
 
     """
     if current_user.is_authenticated:
+        log.debug("Redirect authenticated user: {}".format(current_user))
         return redirect(url_for('say_hello'))
 
     # uuid = session['uuid']
@@ -83,18 +84,17 @@ def index():
     if request.method == 'POST' and form.validate():
         email = form.email.data.strip() if form.email.data else ""
         password = form.password.data.strip() if form.password.data else ""
-        log.debug("{} password: {}".format(email, password))
-
         user = OauthUserEntity.query.filter_by(email=email).one_or_none()
 
         if user:
             log.debug("Found user object: {}".format(user))
         else:
             utils.flash_error("No such email: {}".format(email))
+            log.debug("Redirect no such email: {}".format(email))
             return redirect(url_for('index'))
 
         if user.verify_password(password):
-            log.info('Successful login via email/password for: {}'.format(user))
+            log.debug('Successful login for: {}'.format(user))
             login_user(user, remember=False, force=False)
 
             # Tell Flask-Principal that the identity has changed
@@ -102,7 +102,7 @@ def index():
                                   identity=Identity(user.get_id()))
             return redirect(url_for('say_hello'))
         else:
-            log.info('Incorrect pass for: {}'.format(user))
+            log.debug('Incorrect password for: {}'.format(user))
             utils.flash_error("Incorrect username/password.")
 
     # When sending a GET request render the login form

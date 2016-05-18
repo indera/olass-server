@@ -68,7 +68,7 @@ TOKEN_LENGTH = 40  # max 255
 log = app.logger
 flog = logging.getLogger('flask_oauthlib')
 flog.addHandler(logging.StreamHandler(sys.stdout))
-flog.setLevel(logging.DEBUG)
+flog.setLevel(logging.INFO)
 
 oauth = OAuth2Provider(app)
 
@@ -99,26 +99,23 @@ def load_token(access_token=None, refresh_token=None):
             refresh_token=refresh_token).one_or_none()
 
     if tok:
-        log.info('Loaded token [{}] for user [{}]'
-                 .format(tok.id, tok.client))
-    else:
-        log.warning('Unable to load token for validate_bearer_token()')
+        log.debug('Loaded token [{}] for user [{}]'.format(tok.id, tok.client))
     return tok
 
 
 @oauth.tokensetter
 def save_token(token_props, req, *args, **kwargs):
     """
-
+    Saves token to the database
     """
     result_token = None
     token_id = token_props.get('id')
     token = OauthAccessTokenEntity.get_by_id(token_id)
-    log.info("From {} got {}".format(token_id, token))
+    # log.debug("From {} got {}".format(token_id, token))
 
     if token and not token.is_expired():
-        log.info("Reuse access token: {} expiring on {} ({} seconds left)"
-                 .format(token.id, token.expires, token.expires_in))
+        # log.debug("Reuse access token: {} expiring on {} ({} seconds left)"
+        #           .format(token.id, token.expires, token.expires_in))
         result_token = token
     else:
         access_token = utils.generate_token()
@@ -142,7 +139,7 @@ def save_token(token_props, req, *args, **kwargs):
                 client_id=req.client.client_id,
                 added_at=added_at
             )
-    log.info("return from save_token: {}".format(result_token))
+    # log.info("return from save_token: {}".format(result_token))
     return result_token
 
 
@@ -178,7 +175,7 @@ def handle_request_auth_token():
         client_id=client_id,
         token_type=TOKEN_TYPE_BEARER).one_or_none()
 
-    log.info("return from handle_request_auth_token(): {}".format(token))
+    # log.info("return from handle_request_auth_token(): {}".format(token))
     return token.serialize() if token else {}
 
 

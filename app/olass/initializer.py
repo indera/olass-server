@@ -94,7 +94,6 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
 
     # After we read the confidential settings we can build the database URI
     app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     if len(extra_settings):
         # Override with special settings (example: tests/conftest.py)

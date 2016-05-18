@@ -15,6 +15,7 @@ except ImportError as error:
 
 # The WSGI compliant web-application object
 app = Flask(__name__)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # The Object-Relationan-Mapping (ORM) object
 db = SQLAlchemy(app)

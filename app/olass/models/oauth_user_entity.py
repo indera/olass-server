@@ -68,11 +68,21 @@ class OauthUserEntity(db.Model, UserMixin, CRUDMixin):
     )
 
     def hash_password(self, password):
-        self.password_hash = pwd_context.encrypt(password)
+        """
+        @see
+            https://www.akkadia.org/drepper/SHA-crypt.txt
+        """
+        self.password_hash = pwd_context.encrypt(password,
+                                                 scheme='sha512_crypt',
+                                                 category='admin')
 
     def verify_password(self, password):
         """ Return true if password matches the stored hash """
-        return pwd_context.verify(password, self.password_hash)
+        return pwd_context.verify(password, self.password_hash,
+                                  scheme='sha512_crypt')
+    # scheme='bcrypt')
+    # scheme='bcrypt_sha256')
+    # scheme='pbkdf2_sha512')
 
     # def is_authenticated(self):
     #     """ Returns True if the user is authenticated, i.e. they have provided
