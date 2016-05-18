@@ -5,17 +5,22 @@ Authors:
     Andrei Sura <sura.andrei@gmail.com>
 
 """
+
 from mock import patch
 from base_test_with_data import BaseTestCaseWithData
 from olass.main import app
 from olass import utils
 
 
+login_url = 'https://localhost/'
+token_request_url = 'https://localhost/oauth/token'
+
+
 class TestIntegration(BaseTestCaseWithData):
 
     @patch.multiple(utils, get_uuid_hex=BaseTestCaseWithData.dummy_get_uuid_hex)
     def test_success(self):
-        token_request_url = 'https://localhost/oauth/token'
+
         token_request_data_ok = {
             'client_id': 'client_1',
             'client_secret': 'secret_1',
@@ -50,11 +55,11 @@ class TestIntegration(BaseTestCaseWithData):
         with self.app.test_request_context():
             with app.test_client() as client:
 
-                print("\n Request access from: {}" .format(token_request_url))
+                # print("\n Request access from: {}" .format(token_request_url))
                 response = client.post(token_request_url,
                                        data=token_request_data_ok)
                 access_token = response.json.get('access_token')
-                print("Retrieved access token: {}".format(access_token))
+                # print("Retrieved access token: {}".format(access_token))
 
                 # Now use the retrieved access token
                 auth_headers = [
@@ -82,7 +87,7 @@ class TestIntegration(BaseTestCaseWithData):
 
                 self.assert200(response, "Response code is not 200")
                 data = response.json.get('data')
-                print("==> Integration test response: {}".format(data))
+                # print("==> Integration test response: {}".format(data))
                 status = response.json.get('status')
 
                 if 'success' == status:
@@ -94,18 +99,69 @@ class TestIntegration(BaseTestCaseWithData):
                     # base_test_with_data#dummy_get_uuid_hex()
                     self.assertEqual(
                         group_1.get('uuid'),
-                        '109949141ba811e69454f45c898e9b67')
+                        '709949141ba811e69454f45c898e9b67')
 
                     self.assertEqual(
                         group_2.get('uuid'),
-                        '209949141ba811e69454f45c898e9b67')
+                        '809949141ba811e69454f45c898e9b67')
 
                     self.assertEqual(
                         group_3.get('uuid'),
-                        '409949141ba811e69454f45c898e9b67')
+                        '109949141ba811e69454f45c898e9b67')
 
                 else:
                     self.fail("Error response: {}".format(data))
+
+    def test_login_form_display(self):
+        """
+        Check the login form message presence
+        """
+        with self.app.test_request_context():
+            with app.test_client() as client:
+                response = client.get(login_url)
+                self.assertTrue(b'Please login' in response.data)
+
+    def test_access_protected_resource(self):
+        """
+        Verify that when not logged in the user is
+        unable to access the protected content.
+        """
+        with self.app.test_request_context():
+            with app.test_client() as client:
+                response = client.get("https://localhost/api/hello")
+                self.assertTrue(b'Please <a href="/">login</a> first.'
+                                in response.data)
+
+    def test_login_failure(self):
+        """
+        Try to login with an invalid password
+        """
+        login_data = {'email': 'asura-root@ufl.edu',
+                      'password': 'invalid-password'}
+
+        with self.app.test_request_context():
+            with app.test_client() as client:
+                response = client.post(login_url, data=login_data,
+                                       follow_redirects=True)
+                self.assert200(response, "Response code is not 200")
+                self.assertTrue(b'Please login' in response.data)
+                self.assertTrue(b'Hello asura-root@ufl.edu'
+                                not in response.data)
+
+    def test_login_success(self):
+        """
+        Emulate user login
+        """
+        login_data = {'email': 'asura-root@ufl.edu',
+                      'password': 'password'}
+
+        with self.app.test_request_context():
+            with app.test_client() as client:
+                app.preprocess_request()
+                response = client.post(login_url, data=login_data,
+                                       follow_redirects=True)
+                self.assert200(response, "Response code is not 200")
+                self.assertTrue(b'Hello asura-root@ufl.edu' in response.data)
 
 
 if __name__ == '__main__':

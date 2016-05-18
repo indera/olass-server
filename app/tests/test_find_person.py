@@ -25,12 +25,10 @@ class TestFindPerson(BaseTestCaseWithData):
         binary_hash = unhexlify(
             'b2cdaea3d7c9891b2ed94d1973fe5085183e4bb4bd87b672e066a456ee67bd38')
         links = LinkageEntity.query.filter_by(linkage_hash=binary_hash).all()
-
         self.assertIsNotNone(link)
         self.assertIsNotNone(partner_uf)
-
-        print("\nLinks in the database: {}".format(len(links)))
+        # print("\nLinks in the database: {}".format(len(links)))
 
         for link in links:
             self.assertIsNotNone(link)
-            print(link)
+            # print(link)

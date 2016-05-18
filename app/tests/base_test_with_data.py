@@ -204,7 +204,8 @@ class BaseTestCaseWithData(BaseTestCase):
         ##############
         # add user row
         user = OauthUserEntity.create(
-            email='test@test.com',
+            email='asura-root@ufl.edu',
+            password_hash='$6$rounds=666140$vQVDNQUwZCSDY0u7$kqmaQjQnYwWz9EQlms99UQDYaphVBwujnUs1H3XdhT741pY1HPirG1Y.oydcw3QtQnaMyVOspVZ20Dij7f24A/',
             added_at=added_at
         )
         self.assertEquals(1, user.id)
