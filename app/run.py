@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """
-Goal: Implement the application entry point
+Goal: Implement the application entry point for debugging.
+
+Note: This file is *not* used for production deployment.
+    For production we use run-wsgi.py
 
 @authors:
   Andrei Sura <sura.andrei@gmail.com>
