@@ -18,6 +18,7 @@ col.init(autoreset=True)
 STATUS_PASS = '✔'
 STATUS_FAIL = '✗'
 
+
 @task
 def list():
     """ Show available tasks """
@@ -77,12 +78,37 @@ def reset_db(db_name=None):
     run('sudo mysql {} < schema/003/data.sql'.format(db_name))
     print(col.Fore.GREEN + "[{}] Done.".format(STATUS_PASS))
 
+
 @task(aliases=['run'])
 def go():
     """
     Start the web application using the WSGI webserver provided by Flask
     """
     run('python run.py')
+
+
+@task
+def show_versions(url='https://localhost'):
+    # run ('git fetch --tags')
+
+    cmd = """git tag \
+        | sort -t. -k 1,1n -k 2,2n -k 3,3n \
+        | tail -1"""
+    cmd2 = 'curl -sk {}'.format(url) + """ \
+            | grep Version \
+            | grep -oE "[0-9.]{1,2}[0-9.]{1,2}[0-9a-z.]{1,4}" \
+            | tail -1"""
+
+    last_tag = run(cmd, pty=False, hide='both')
+    deployed_tag = run(cmd2, pty=False, hide='both')
+
+    print("Last tag in the repository: {}".format(last_tag.stdout.strip()))
+    print("Deployed tag: {}".format(deployed_tag.stdout.strip()))
+
+    if last_tag != deployed_tag:
+        print("[{}] Tags do not match!".format(STATUS_FAIL))
+    else:
+        print("[{}] Tags do match.".format(STATUS_PASS))
 
 
 @task
