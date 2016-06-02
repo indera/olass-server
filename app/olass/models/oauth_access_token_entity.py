@@ -4,6 +4,7 @@ ORM for 'oauth_access_token' table
 """
 from olass.models.crud_mixin import CRUDMixin
 from olass.models.oauth_client_entity import OauthClientEntity
+from olass import utils
 from olass.main import db
 from datetime import datetime
 
@@ -22,6 +23,7 @@ from datetime import datetime
 +---------------+--------------+------+-----+---------+----------------+
 """
 
+
 class OauthAccessTokenEntity(db.Model, CRUDMixin):
     """
     Access tokens are used for accessing protected data.
@@ -39,6 +41,8 @@ class OauthAccessTokenEntity(db.Model, CRUDMixin):
     token_type = db.Column(db.String(40))
     access_token = db.Column(db.String(255), unique=True)
     refresh_token = db.Column(db.String(255), unique=True)
+
+    # Note: this column stores UTC values
     expires = db.Column(db.DateTime)
     _scopes = db.Column(db.Text)
     added_at = db.Column('added_at', db.DateTime, nullable=False)
@@ -57,22 +61,22 @@ class OauthAccessTokenEntity(db.Model, CRUDMixin):
         """
         Note: If the `expires` attribute is None we consider the token expired.
 
-        :rtype bool: true if 'expires' datetime > the current datetime
+        :rtype bool: true if 'expires' datetime > the current UTC datetime
 
         """
         if self.expires:
-            return self.expires < datetime.now()
+            return self.expires < datetime.utcnow()
         return True
 
     @property
     def expires_in(self):
         """
-        :rtype int: the number of seconds left untill the token expiration
+        :rtype int: the number of seconds left until the token expiration
         """
         secs = 0
 
         if not self.is_expired():
-            diff = self.expires - datetime.now()
+            diff = self.expires - datetime.utcnow()
             secs = int(diff.total_seconds()) + 1
 
         return secs
@@ -88,8 +92,11 @@ class OauthAccessTokenEntity(db.Model, CRUDMixin):
         """
         return {
             'id': self.id,
+            'token_type': self.token_type,
             'access_token': self.access_token,
             'expires_in': self.expires_in,
+            '.expires_on_utc': utils.serialize_date_utc(self.expires),
+            '.expires_on_local': utils.serialize_date_est(self.expires),
         }
 
     def __repr__(self):
