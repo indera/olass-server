@@ -33,15 +33,18 @@ function install_app_server() {
 }
 
 function install_app() {
+    mkdir -p $APP_FOLDER/deploy
+
     pushd $APP_FOLDER
         # Setting up a virtual environment will keep the application and its
         # dependencies isolated from the main system.
 
         log "Creating virtual environment: $VENV_FOLDER"
-        virtualenv VENV_FOLDER
+        virtualenv -p /usr/bin/python3 $VENV_FOLDER
         . $VENV_FOLDER/bin/activate
             log "Installing required python packages..."
-            pip install -r requirements/dev.pip
+            ls -al
+            pip install -r /srv/apps/olass/app/requirements.txt
         deactivate
     popd
 
@@ -59,13 +62,18 @@ function install_app() {
         fi
 
         log "Execute sql: db/000/upgrade.sql"
-        mysql < db/000/upgrade.sql
+        mysql -u root < db/000/upgrade.sql
         log "Execute sql: db/001/upgrade.sql"
-        mysql $DB_NAME   < db/001/upgrade.sql
+        mysql -u root $DB_NAME   < db/001/upgrade.sql
         log "Execute sql: db/002/upgrade.sql"
-        mysql $DB_NAME   < db/002/upgrade.sql
+        mysql -u root $DB_NAME   < db/002/upgrade.sql
         log "Execute sql: db/002/data.sql"
-        mysql $DB_NAME   < db/002/data.sql
+        mysql -u root $DB_NAME   < db/002/data.sql
+
+        log "Execute sql: db/003/upgrade.sql"
+        mysql -u root $DB_NAME   < db/003/upgrade.sql
+        log "Execute sql: db/003/data.sql"
+        mysql -u root $DB_NAME   < db/003/data.sql
 
         log "Stop the server in order to disable the default site"
         service nginx stop
