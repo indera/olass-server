@@ -44,15 +44,9 @@ following cases:
 """
 # TODO: read http://flask-oauthlib.readthedocs.io/en/latest/client.html
 
-import sys
-import logging
-
 from datetime import datetime, timedelta
 from flask_oauthlib.provider import OAuth2Provider
 from flask import request
-# from flask_login import login_required
-# from flask_login import current_user
-
 from olass import utils
 from olass.main import app
 
@@ -62,14 +56,10 @@ from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
 TOKEN_TYPE_BEARER = 'Bearer'
 
 # TODO: read this options from config file
-TOKEN_EXPIRES_SECONDS = 36000  # 10 hours
+TOKEN_EXPIRES_SECONDS = 3600  # one hour
 TOKEN_LENGTH = 40  # max 255
 
 log = app.logger
-flog = logging.getLogger('flask_oauthlib')
-flog.addHandler(logging.StreamHandler(sys.stdout))
-flog.setLevel(logging.INFO)
-
 oauth = OAuth2Provider(app)
 
 
@@ -119,7 +109,6 @@ def save_token(token_props, req, *args, **kwargs):
         result_token = token
     else:
         access_token = utils.generate_token()
-
         # access_token = utils.generate_token_urandom(TOKEN_LENGTH)
         expires = datetime.utcnow() + timedelta(seconds=TOKEN_EXPIRES_SECONDS)
         added_at = utils.get_db_friendly_date_time()
