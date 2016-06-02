@@ -89,12 +89,12 @@ def index():
         if user:
             log.debug("Found user object: {}".format(user))
         else:
-            utils.flash_error("No such email: {}".format(email))
+            utils.flash_error("Incorrect username/password.")
             log.debug("Redirect no such email: {}".format(email))
             return redirect(url_for('index'))
 
         if user.verify_password(password):
-            log.debug('Successful login for: {}'.format(user))
+            log.info('Successful login for: {}'.format(user))
             login_user(user, remember=False, force=False)
 
             # Tell Flask-Principal that the identity has changed
@@ -102,8 +102,9 @@ def index():
                                   identity=Identity(user.get_id()))
             return redirect(url_for('say_hello'))
         else:
-            log.debug('Incorrect password for: {}'.format(user))
+            log.warning('Incorrect password for: {}'.format(user))
             utils.flash_error("Incorrect username/password.")
+            return redirect(url_for('index'))
 
     # When sending a GET request render the login form
     return render_template('index.html', form=form,
