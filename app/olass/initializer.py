@@ -9,7 +9,7 @@ import config
 import os
 import sys
 import ssl
-# import logging
+import logging
 # from logging import Formatter
 # from logging.handlers import RotatingFileHandler
 
@@ -119,12 +119,21 @@ def _configure_logging(app):
     """
     log_level = app.config['LOG_LEVEL']
     app.logger.setLevel(log_level)
+    app.logger.addHandler(logging.StreamHandler(sys.stdout))
     # handler = logging.StreamHandler()
     # handler = RotatingFileHandler('olass.log', maxBytes=99000, backupCount=1)
     # fmt = Formatter('%(asctime)s %(levelname)s: '
     #                 '%(message)s [%(filename)s +%(lineno)d]')
     # handler.setFormatter(fmt)
-    # app.logger.addHandler(handler)
+
+    alog = logging.getLogger('oauthlib')
+    alog.addHandler(logging.StreamHandler(sys.stdout))
+    alog.setLevel(logging.INFO)
+
+    flog = logging.getLogger('flask_oauthlib')
+    flog.addHandler(logging.StreamHandler(sys.stdout))
+    flog.setLevel(logging.INFO)
+
     app.logger.debug("_configure_logging() set log_level to: {}"
                      .format(log_level))
 
