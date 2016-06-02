@@ -11,7 +11,7 @@ import unicodedata
 import functools
 # import hmac
 # import base64
-# import pytz as tz
+import pytz as tz
 
 # from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime, timedelta
@@ -31,7 +31,7 @@ FLASH_CATEGORY_INFO = 'info'
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                               '0123456789')
+                               '0123456789.-')
 
 
 # table of punctuation characters + space
@@ -170,28 +170,31 @@ def get_db_friendly_date_time(when=None):
     return when.replace(microsecond=0)
 
 
-# def localize_datetime(value, zone_name='US/Eastern'):
-#     """ Localize the specified datetime value according to a zone"""
-#     # print(tz.all_timezones)
-#     if value is None:
-#         return ''
-#     timezone = tz.timezone(zone_name)
-#     localized_value = timezone.localize(value, is_dst=None)
-#     return localized_value
-#
-#
-# def localize_est_date(value):
-#     """ Format the datetime value as `FORMAT_US_DATE` """
-#     localized_value = localize_datetime(value)
-#     return localized_value.strftime(FORMAT_US_DATE)
-#
-#
-# def localize_est_datetime(value):
-#     """ Format the datetime value as `FORMAT_US_DATE_TIME` """
-#     localized_value = localize_datetime(value)
-#     if value is None or '' == value:
-#         return ''
-#     return localized_value.strftime(FORMAT_US_DATE_TIME)
+def localize_datetime(value, zone_name='US/Eastern'):
+    """
+    Localize the specified datetime value according to a zone
+    @see http://www.timeanddate.com/time/map/
+    """
+    # print(tz.all_timezones)
+    utc_dt = tz.utc.localize(value)
+    return utc_dt.astimezone(tz.timezone(zone_name))
+
+
+def serialize_date(value, zone_name='US/Eastern'):
+    """ Format the datetime value as `FORMAT_US_DATE_TIME` """
+    if value is None or '' == value:
+        return ''
+
+    localized_value = localize_datetime(value, zone_name)
+    return localized_value.strftime(FORMAT_US_DATE_TIME)
+
+
+def serialize_date_est(value):
+    return serialize_date(value, 'US/Eastern')
+
+
+def serialize_date_utc(value):
+    return serialize_date(value, 'UTC')
 
 
 # def get_email_token(email, salt, secret):
