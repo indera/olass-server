@@ -6,7 +6,7 @@ function configure_base() {
    dpkg-reconfigure tzdata
 
    # Update packages
-   apt-get update -y
+   # apt-get update -y
 }
 
 function install_utils() {
@@ -25,17 +25,32 @@ function install_utils() {
 function install_app_server() {
     apt-get install -y libssl-dev
     apt-get install -y libffi-dev libsqlite3-dev
-    apt-get install -y nginx supervisor
+
+    apt-get install -y nginx supervisor uwsgi-plugin-python3
+
+    # Run uwsgi under nginx group
+    adduser --system --no-create-home --disabled-login --disabled-password --group nginx
+    adduser --system --no-create-home --disabled-login --disabled-password --ingroup nginx uwsgi
+    mkdir -p /var/run/uwsgi
+    chown uwsgi /var/run/uwsgi
+
     apt-get install -y mysql-server libmysqlclient-dev
     apt-get install -y python-pip python-dev
+    apt-get install -y python3-dev
+
     apt-get install -y python-flake8 pylint
     apt-get install -y virtualenv virtualenvwrapper
+
+    # Get the proper uWSGI - uwsgi-2.0.13.1.tar.gz
+    wget -q --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+    python3 get-pip.py
+    rm get-pip.py
+    pip3 install uwsgi uwsgitop
+    apt-get install -y uwsgi-plugin-python3
 }
 
 function install_app() {
-    mkdir -p $APP_FOLDER/deploy
-
-    pushd $APP_FOLDER
+    pushd $DEPLOY_FOLDER
         # Setting up a virtual environment will keep the application and its
         # dependencies isolated from the main system.
 
@@ -44,13 +59,13 @@ function install_app() {
         . $VENV_FOLDER/bin/activate
             log "Installing required python packages..."
             ls -al
-            pip install -r /srv/apps/olass/app/requirements.txt
+            pip install -r $APP_FOLDER/requirements.txt
         deactivate
     popd
 
-    pushd $APP_FOLDER/deploy
+    pushd $DEPLOY_FOLDER
         log "Link app config file to make it visible in config.py... "
-        # ln -sfv sample.vagrant.settings.conf settings.conf
+        ln -sfv $DEPLOY_FOLDER/app/deploy/vagrant-settings.py settings.py
     popd
 
     pushd $APP_FOLDER
@@ -58,39 +73,60 @@ function install_app() {
 
         if [ -d /var/lib/mysql/$DB_NAME ]; then
             log "Database $DB_NAME already exists... removing"
-            mysql < db/000/downgrade.sql
+            mysql < $SCHEMA_FOLDER/000/downgrade.sql
         fi
 
-        log "Execute sql: db/000/upgrade.sql"
-        mysql -u root < db/000/upgrade.sql
-        log "Execute sql: db/001/upgrade.sql"
-        mysql -u root $DB_NAME   < db/001/upgrade.sql
-        log "Execute sql: db/002/upgrade.sql"
-        mysql -u root $DB_NAME   < db/002/upgrade.sql
-        log "Execute sql: db/002/data.sql"
-        mysql -u root $DB_NAME   < db/002/data.sql
+        log "Execute sql: 000/upgrade.sql"
+        mysql -u root < $SCHEMA_FOLDER/000/upgrade.sql
+        log "Execute sql: 001/upgrade.sql"
+        mysql -u root $DB_NAME   < $SCHEMA_FOLDER/001/upgrade.sql
+        log "Execute sql: 002/upgrade.sql"
+        mysql -u root $DB_NAME   < $SCHEMA_FOLDER/002/upgrade.sql
+        log "Execute sql: 002/data.sql"
+        mysql -u root $DB_NAME   < $SCHEMA_FOLDER/002/data.sql
 
-        log "Execute sql: db/003/upgrade.sql"
-        mysql -u root $DB_NAME   < db/003/upgrade.sql
-        log "Execute sql: db/003/data.sql"
-        mysql -u root $DB_NAME   < db/003/data.sql
+        log "Execute sql: 003/upgrade.sql"
+        mysql -u root $DB_NAME   < $SCHEMA_FOLDER/003/upgrade.sql
+        log "Execute sql: 003/data.sql"
+        mysql -u root $DB_NAME   < $SCHEMA_FOLDER/003/data.sql
 
-        log "Stop the server in order to disable the default site"
+        log "Stop Nginx to disable the default site"
         service nginx stop
-        supervisorctl stop all
+
+        log "Remove default site: /etc/nginx/sites-enabled/default"
+        rm -f /etc/nginx/sites-enabled/default
+
+        log "Generate and link ssl certs"
+        pushd ssl
+            bash gen_cert.sh
+            ln -sfv $APP_FOLDER/ssl/server.crt /etc/ssl/server.crt
+            ln -sfv $APP_FOLDER/ssl/server.key /etc/ssl/server.key
+        popd
 
         log "Link config files for nginx"
-        ln -sfv $APP_FOLDER/deploy/nginx-olass.conf /etc/nginx/sites-available.conf
-        ln -sfv $APP_FOLDER/deploy/nginx-olass.conf /etc/nginx/sites-enabled.conf
+        ln -sfv $APP_FOLDER/deploy/vagrant-nginx /etc/nginx/sites-available/vagrant-nginx
+        ln -sfv /etc/nginx/sites-available/vagrant-nginx /etc/nginx/sites-enabled/vagrant-nginx
 
-        log "Restaring the server with new config..."
-        sleep 2
+        log "Download the Nginx 'siteman' tool"
+        wget -q -O /usr/local/sbin/siteman https://raw.githubusercontent.com/indera/siteman/master/siteman
+        chmod +x /usr/local/sbin/siteman
+        siteman -l
+
+        log "Start Nginx with new config..."
+        service nginx configtest
         service nginx start
-        supervisorctl start all
 
-        #log "Activate the python wsgi app"
-        #touch -af /srv/apps/olass/vagrant.wsgi
-        #curl -sk https://localhost | grep -i 'olass'
+        # Stop the supervisor to modify the config
+        # supervisorctl stop all
+
+        # Link the supervisor config file to manage the process:
+        #   uwsgi /srv/apps/olass/app/deploy/vagrant-uwsgi.ini
+        ln -sfv /srv/apps/olass/app/deploy/vagrant-supervisord.conf /etc/supervisor/conf.d/vagrant-supervisord.conf
+        supervisorctl reread
+        supervisorctl reload
+        sleep 4
+        test -S /var/run/uwsgi/olass.sock || echo "No socket file found: /var/run/uwsgi/olass.sock"
+        echo "curl -k https://localhost | grep -i 'olass'"
     popd
 }
 

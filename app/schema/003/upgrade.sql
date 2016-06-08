@@ -1,4 +1,8 @@
 
+INSERT INTO version (version_id, version_info)
+    VALUES('003', 'Create tables: oauth_user, oauth_role, oauth_user_role, oauth_client, oauth_access_token')
+;
+
 -- add oauth tables
 
 CREATE TABLE oauth_user (
@@ -52,23 +56,6 @@ CREATE TABLE oauth_client (
  UNIQUE KEY(client_id),
  KEY user_id (user_id),
  CONSTRAINT `fk_client_user_id` FOREIGN KEY (user_id) REFERENCES oauth_user (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
-
--- A grant token is created in the authorization flow, and will be destroyed when the authorization finished.
--- Ideally we would store grant_tokens in a cache (such as redis) for better performance
-CREATE TABLE oauth_grant_code (
-    id int(11) NOT NULL AUTO_INCREMENT,
-    client_id varchar(40) NOT NULL,
-    code varchar(255) NOT NULL,
-    redirect_uri varchar(255) DEFAULT NULL,
-    expires datetime DEFAULT NULL,
-    _scopes text,
-    added_at datetime DEFAULT NULL,
- PRIMARY KEY (id),
- KEY (client_id),
- KEY (code),
- CONSTRAINT `fk_oauth_grant_code_client_id` FOREIGN KEY (client_id) REFERENCES oauth_client (client_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 

@@ -7,7 +7,7 @@ CREATE TABLE version (
   PRIMARY KEY (version_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO Version (version_id, version_stamp, version_info)
+INSERT INTO version (version_id, version_stamp, version_info)
    VALUES('001', now(), 'New table: version')
 ;
 

@@ -3,8 +3,11 @@
 export DEBIAN_FRONTEND=noninteractive
 
 SHARED_FOLDER=/vagrant
-APP_FOLDER=/srv/apps/olass
-VENV_FOLDER=$APP_FOLDER/venv
+DEPLOY_FOLDER=/srv/apps/olass
+APP_FOLDER=$DEPLOY_FOLDER/app
+SCHEMA_FOLDER=$DEPLOY_FOLDER/app/schema
+
+VENV_FOLDER=$DEPLOY_FOLDER/venv
 DB_NAME=olass
 DB_USER=olass
 
