@@ -23,6 +23,10 @@ alias conf_app='        sudo vim /srv/apps/olass/app/deploy/vagrant-uwsgi.ini'
 alias conf_app_site='   sudo vim /etc/nginx/sites-available/vagrant-nginx'
 alias check_app='       echo "curl -sk https://localhost/" && curl -sk https://localhost'
 
+alias log_app='         vim /var/log/uwsgi/olass.log'
+alias tail_app='        echo '/var/log/uwsgi/olass.log' && tail -f /var/log/uwsgi/olass.log'
+alias clean_app='       echo > /var/log/uwsgi/olass.log'
+
 log_uwsgi='vim /var/log/uwsgi.log'
 tail_uwsgi='tail -f /var/log/uwsgi.log'
 
