@@ -6,7 +6,7 @@ function configure_base() {
    dpkg-reconfigure tzdata
 
    # Update packages
-   apt-get update -y
+   # apt-get update -y
 }
 
 function install_utils() {
@@ -31,6 +31,8 @@ function install_app_server() {
     # Run uwsgi under nginx group
     adduser --system --no-create-home --disabled-login --disabled-password --group nginx
     adduser --system --no-create-home --disabled-login --disabled-password --ingroup nginx uwsgi
+    mkdir -p /var/run/uwsgi
+    chown uwsgi /var/run/uwsgi
 
     apt-get install -y mysql-server libmysqlclient-dev
     apt-get install -y python-pip python-dev
@@ -40,12 +42,11 @@ function install_app_server() {
     apt-get install -y virtualenv virtualenvwrapper
 
     # Get the proper uWSGI - uwsgi-2.0.13.1.tar.gz
-    wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+    wget -q --no-check-certificate https://bootstrap.pypa.io/get-pip.py
     python3 get-pip.py
     rm get-pip.py
     pip3 install uwsgi uwsgitop
     apt-get install -y uwsgi-plugin-python3
-    uwsgi --plugins-list
 }
 
 function install_app() {
@@ -64,7 +65,7 @@ function install_app() {
 
     pushd $DEPLOY_FOLDER
         log "Link app config file to make it visible in config.py... "
-        ln -sfv $DEPLOY_FOLDER/app/deploy/vagrant-settings.conf settings.conf
+        ln -sfv $DEPLOY_FOLDER/app/deploy/vagrant-settings.py settings.py
     popd
 
     pushd $APP_FOLDER
@@ -89,40 +90,43 @@ function install_app() {
         log "Execute sql: 003/data.sql"
         mysql -u root $DB_NAME   < $SCHEMA_FOLDER/003/data.sql
 
-
-        # Stop the supervisor to modify the config
-        supervisorctl stop all
-
-        # Link the supervisor config file to manage the process:
-        #   uwsgi /srv/apps/olass/app/deploy/vagrant-uwsgi.ini
-        ln -sfv /srv/apps/olass/app/deploy/vagrant-supervisord.conf /etc/supervisor/conf.d/vagrant-supervisord.conf
-        supervisorctl reread
-        supervisorctl start all
-
         log "Stop Nginx to disable the default site"
         service nginx stop
 
         log "Remove default site: /etc/nginx/sites-enabled/default"
         rm -f /etc/nginx/sites-enabled/default
 
-        # Download the siteman
-        wget -q -O /usr/local/sbin/siteman https://raw.githubusercontent.com/indera/siteman/master/siteman
-        chmod +x /usr/local/sbin/siteman
-        siteman -l
+        log "Generate and link ssl certs"
+        pushd ssl
+            bash gen_cert.sh
+            ln -sfv $APP_FOLDER/ssl/server.crt /etc/ssl/server.crt
+            ln -sfv $APP_FOLDER/ssl/server.key /etc/ssl/server.key
+        popd
 
         log "Link config files for nginx"
         ln -sfv $APP_FOLDER/deploy/vagrant-nginx /etc/nginx/sites-available/vagrant-nginx
         ln -sfv /etc/nginx/sites-available/vagrant-nginx /etc/nginx/sites-enabled/vagrant-nginx
-        ln -sfv $APP_FOLDER/ssl/server.crt /etc/ssl/server.crt
-        ln -sfv $APP_FOLDER/ssl/server.key /etc/ssl/server.key
 
+        log "Download the Nginx 'siteman' tool"
+        wget -q -O /usr/local/sbin/siteman https://raw.githubusercontent.com/indera/siteman/master/siteman
+        chmod +x /usr/local/sbin/siteman
         siteman -l
+
+        log "Start Nginx with new config..."
         service nginx configtest
-        log "Restaring the server with new config..."
-        sleep 2
         service nginx start
 
-        #curl -sk https://localhost | grep -i 'olass'
+        # Stop the supervisor to modify the config
+        # supervisorctl stop all
+
+        # Link the supervisor config file to manage the process:
+        #   uwsgi /srv/apps/olass/app/deploy/vagrant-uwsgi.ini
+        ln -sfv /srv/apps/olass/app/deploy/vagrant-supervisord.conf /etc/supervisor/conf.d/vagrant-supervisord.conf
+        supervisorctl reread
+        supervisorctl reload
+        sleep 4
+        test -S /var/run/uwsgi/olass.sock || echo "No socket file found: /var/run/uwsgi/olass.sock"
+        echo "curl -k https://localhost | grep -i 'olass'"
     popd
 }
 
