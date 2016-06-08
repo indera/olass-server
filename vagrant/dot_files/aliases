@@ -18,8 +18,15 @@ alias port_5000='sudo netstat -tulpn | grep :5000'
 alias check_5000='curl -k https://localhost:5000 && echo'
 alias check_app='echo "curl -sk https://loalhost" && curl -sk https://localhost/'
 
+alias cd_app='cd /srv/apps/olass && ls -al'
+alias conf_app='        sudo vim /srv/apps/olass/app/deploy/vagrant-uwsgi.ini'
+alias conf_app_site='   sudo vim /etc/nginx/sites-available/vagrant-nginx'
 alias check_app='       echo "curl -sk https://localhost/" && curl -sk https://localhost'
 
+log_uwsgi='vim /var/log/uwsgi.log'
+tail_uwsgi='tail -f /var/log/uwsgi.log'
+
+alias restart_supervisor='  sudo supervisorctl restart all'
 alias restart_mysql='       sudo service mysql restart'
 
 alias ssl_check='       openssl s_client -connect localhost:443  | grep subject'

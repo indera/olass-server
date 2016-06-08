@@ -23,9 +23,10 @@ class DefaultConfig(object):
     """
     LOG_LEVEL = logging.INFO
 
-    # When we deploy we use /srv/apps/olass/ folder
-    CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR,
-                                              '/srv/apps/olass/settings.py')
+    # The `settings.py` file is created by the deployment process
+    # For vagrant deployment we execute:
+    #   ln -sfv $DEPLOY_FOLDER/app/deploy/vagrant-settings.conf settings.conf
+    CONFIDENTIAL_SETTINGS_FILE = '/srv/apps/olass/settings.py'
 
     # SSL Certificate config
     # Note: the paths to the certificate do *not matter* when the app is
