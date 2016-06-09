@@ -101,9 +101,9 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
         app.config.update(extra_settings)
 
     # load routes
-    from .routes import api
-    from .routes import index
-    from .routes import oauth
+    from .routes import api  # NOQA
+    from .routes import index  # NOQA
+    from .routes import oauth  # NOQA
 
     if app.debug and app.config['DEBUG_TB_ENABLED'] and not app.testing:
         # When runing tests there is no need for the debugtoolbar
