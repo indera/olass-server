@@ -5,32 +5,26 @@ Authors:
     Andrei Sura <sura.andrei@gmail.com>
 
 """
-
 from mock import patch
 from base_test_with_data import BaseTestCaseWithData
 from olass.main import app
 from olass import utils
 
-
 login_url = 'https://localhost/'
+
+# The route for requesting access tokens
 token_request_url = 'https://localhost/oauth/token'
 
+# The route for saving chunks
+save_patient_chunks_url = 'https://localhost/api/save'
 
-class TestIntegration(BaseTestCaseWithData):
+token_request_data_ok = {
+    'client_id': 'client_1',
+    'client_secret': 'secret_1',
+    'grant_type': 'client_credentials'
+}
 
-    @patch.multiple(utils, get_uuid_hex=BaseTestCaseWithData.dummy_get_uuid_hex)
-    def test_success(self):
-
-        token_request_data_ok = {
-            'client_id': 'client_1',
-            'client_secret': 'secret_1',
-            'grant_type': 'client_credentials'
-        }
-
-        # The route for saving chunks
-        save_patient_chunks_url = 'https://localhost/api/save'
-
-        chunks = """
+chunks = """
 {
   "partner_code": "UF",
   "data": {
@@ -40,7 +34,7 @@ class TestIntegration(BaseTestCaseWithData):
    ],
 "2":
    [{"chunk_num": "1",
-   "chunk": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"},
+  "chunk": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"},
    {"chunk_num": "2",
    "chunk": "1dcce10470c0ea73a8a6287f69f4f862c5e13faea7c11104fae07dbc8d5ce56e"}
    ],
@@ -49,13 +43,18 @@ class TestIntegration(BaseTestCaseWithData):
    "chunk": "995b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"}
    ]
 }
-}
+}"""
 
-        """
+
+class TestIntegration(BaseTestCaseWithData):
+
+    @patch.multiple(utils,
+                    get_uuid_hex=BaseTestCaseWithData.dummy_get_uuid_hex)
+    def test_success(self):
+
         with self.app.test_request_context():
             with app.test_client() as client:
-
-                # print("\n Request access from: {}" .format(token_request_url))
+                # print("\n Request access from:{}" .format(token_request_url))
                 response = client.post(token_request_url,
                                        data=token_request_data_ok)
                 access_token = response.json.get('access_token')
@@ -108,7 +107,6 @@ class TestIntegration(BaseTestCaseWithData):
                     self.assertEqual(
                         group_3.get('uuid'),
                         '109949141ba811e69454f45c898e9b67')
-
                 else:
                     self.fail("Error response: {}".format(data))
 
