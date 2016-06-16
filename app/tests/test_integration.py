@@ -26,24 +26,36 @@ token_request_data_ok = {
 
 chunks = """
 {
-  "partner_code": "UF",
-  "data": {
-"1":
-   [{"chunk_num": "1",
-   "chunk": "b2cdaea3d7c9891b2ed94d1973fe5085183e4bb4bd87b672e066a456ee67bd38"}
-   ],
-"2":
-   [{"chunk_num": "1",
-  "chunk": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"},
-   {"chunk_num": "2",
-   "chunk": "1dcce10470c0ea73a8a6287f69f4f862c5e13faea7c11104fae07dbc8d5ce56e"}
-   ],
-"3":
-   [{"chunk_num": "1",
-   "chunk": "995b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"}
-   ]
+"data": {
+   "1": {
+       "1": "b2cdaea3d7c9891b2ed94d1973fe5085183e4bb4bd87b672e066a456ee67bd38"
+       },
+
+   "2": {
+       "1": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7",
+       "2": "1dcce10470c0ea73a8a6287f69f4f862c5e13faea7c11104fae07dbc8d5ce56e"
+       },
+   "3": {
+       "1": "995b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"
+       }
+   }
 }
-}"""
+"""
+
+# Example of output json:
+out = """
+{
+    "data": {
+        "1": {
+            "uuid": "ebd9ae1a1ba011e694c84d46767d11db"
+        },
+        "2": {
+            "uuid": "ebd9b9d21ba011e694c84d46767d11db"
+        }
+    },
+    "status": "success"
+}
+"""
 
 
 class TestIntegration(BaseTestCaseWithData):
