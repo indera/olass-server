@@ -20,7 +20,6 @@ pytest-cov
 pytz
 
 # utility functions in tasks.py 
-colorama
 invoke
 
 # Flask-Mail
