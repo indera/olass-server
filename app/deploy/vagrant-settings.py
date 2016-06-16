@@ -1,13 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Goal: store confidential settings
 
-Note: this file is *not* used for deployment.
+Note: this file is *not* used for deployment, it is intended for
+    use in developer's vagrant box
 """
 
 # (!) Never run in production with debug mode enabled
-DEBUG = False
+DEBUG = True
 DEBUG_TB_ENABLED = False
 
 # This is generated automatically during deployment with fabric
