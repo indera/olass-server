@@ -67,7 +67,7 @@ class DebugConfig(DefaultConfig):
     Note: the options in CONFIDENTIAL_SETTINGS_FILE
            will override what we set in this method.
     """
-    LOG_LEVEL = logging.DEBUG
+    # LOG_LEVEL = logging.DEBUG
     DEBUG = True
     DEBUG_TB_ENABLED = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
@@ -77,6 +77,7 @@ class DebugConfig(DefaultConfig):
 class TestConfig(DefaultConfig):
     """ Configuration for running tests """
     # PRESERVE_CONTEXT_ON_EXCEPTION = False
+    DEBUG = True
     TESTING = True
     CSRF_ENABLED = False
     CONFIDENTIAL_SETTINGS_FILE = os.path.join(BASEDIR,
