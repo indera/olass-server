@@ -61,7 +61,7 @@ out = """
 class TestIntegration(BaseTestCaseWithData):
 
     @patch.multiple(utils,
-                    get_uuid_hex=BaseTestCaseWithData.dummy_get_uuid_hex)
+                    get_uuid_bin=BaseTestCaseWithData.dummy_get_uuid_bin)
     def test_success(self):
 
         with self.app.test_request_context():

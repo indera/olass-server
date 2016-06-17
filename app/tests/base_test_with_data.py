@@ -9,26 +9,18 @@ from mock import patch
 from hashlib import sha256
 from binascii import unhexlify
 from binascii import hexlify
+from sqlalchemy.orm.exc import MultipleResultsFound
+
 from base_test import BaseTestCase
 from olass import utils
 from olass.main import db
 
-# from olass.models.role_entity import ROLE_ADMIN, ROLE_SITE_ADMIN,\
-# ROLE_SITE_USER
-# from olass.models.role_entity import RoleEntity
-
-# from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
-
 from olass.models.person import Person
 from olass.models.partner_entity import PartnerEntity
-
 from olass.models.linkage_entity import LinkageEntity
-
 from olass.models.oauth_user_entity import OauthUserEntity
 from olass.models.oauth_user_role_entity import OauthUserRoleEntity
 from olass.models.oauth_role_entity import OauthRoleEntity
-
 from olass.models.oauth_client_entity import OauthClientEntity
 from olass.models.oauth_grant_code_entity import OauthGrantCodeEntity
 from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
@@ -126,9 +118,9 @@ class BaseTestCaseWithData(BaseTestCase):
                     partner_description.like(
                         '%Florida%')).one()
 
-    def dummy_get_uuid_hex(*args, **kwargs):
+    def dummy_get_uuid_bin(*args, **kwargs):
         """
-        Patch the get_uuid_hex() so we can get predictable UUIDs
+        Patch the get_uuid_bin() so we can get predictable UUIDs
         usable in test_integration.py
         """
         global COUNT
@@ -136,7 +128,7 @@ class BaseTestCaseWithData(BaseTestCase):
         uuid_text = "{}09949141ba811e69454f45c898e9b67".format(COUNT)
         return unhexlify(str(uuid_text).replace('-', '').lower().encode())
 
-    @patch.multiple(utils, get_uuid_hex=dummy_get_uuid_hex)
+    @patch.multiple(utils, get_uuid_bin=dummy_get_uuid_bin)
     def create_sample_data(self):
         """ Add some data """
         added_date = utils.get_db_friendly_date_time()
@@ -162,7 +154,7 @@ class BaseTestCaseWithData(BaseTestCase):
         for person_data in sample_data:
             person_orig = Person(person_data)
             person = Person.get_prepared_person(person_data)
-            pers_uuid = utils.get_uuid_hex()
+            pers_uuid = utils.get_uuid_bin()
             hashes = get_person_hash(person,
                                      [RULE_CODE_F_L_D_Z, RULE_CODE_L_F_D_Z])
 
