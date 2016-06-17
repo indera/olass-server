@@ -22,7 +22,6 @@ from olass.models.oauth_user_entity import OauthUserEntity
 from olass.models.oauth_user_role_entity import OauthUserRoleEntity
 from olass.models.oauth_role_entity import OauthRoleEntity
 from olass.models.oauth_client_entity import OauthClientEntity
-from olass.models.oauth_grant_code_entity import OauthGrantCodeEntity
 from olass.models.oauth_access_token_entity import OauthAccessTokenEntity
 
 
@@ -181,6 +180,7 @@ class BaseTestCaseWithData(BaseTestCase):
         """
         added_at = utils.get_db_friendly_date_time()
         expires_date = utils.get_expiration_date(10)
+        expires_date2 = utils.get_expiration_date(0)
 
         ##############
         # add role row
@@ -197,7 +197,7 @@ class BaseTestCaseWithData(BaseTestCase):
         # add user row
         user = OauthUserEntity.create(
             email='asura-root@ufl.edu',
-            password_hash='$6$rounds=666140$vQVDNQUwZCSDY0u7$kqmaQjQnYwWz9EQlms99UQDYaphVBwujnUs1H3XdhT741pY1HPirG1Y.oydcw3QtQnaMyVOspVZ20Dij7f24A/',
+            password_hash='$6$rounds=666140$vQVDNQUwZCSDY0u7$kqmaQjQnYwWz9EQlms99UQDYaphVBwujnUs1H3XdhT741pY1HPirG1Y.oydcw3QtQnaMyVOspVZ20Dij7f24A/',  # NOQA
             added_at=added_at
         )
         self.assertEquals(1, user.id)
@@ -233,10 +233,10 @@ class BaseTestCaseWithData(BaseTestCase):
             user_id=user.id,
             added_at=added_at)
 
-        grant = OauthGrantCodeEntity.create(
-            client_id=client.client_id,
-            code='grant_code_1',
-            expires=expires_date,
+        client2 = OauthClientEntity.create(
+            client_id='client_2',
+            client_secret='secret_2',
+            user_id=user.id,
             added_at=added_at)
 
         token = OauthAccessTokenEntity.create(
@@ -247,10 +247,18 @@ class BaseTestCaseWithData(BaseTestCase):
             expires=expires_date,
             added_at=added_at)
 
+        token2 = OauthAccessTokenEntity.create(
+            client_id=client2.client_id,
+            token_type='Bearer',
+            access_token='access_token_2',
+            refresh_token='',
+            expires=expires_date2,
+            added_at=added_at)
+
         self.assertIsNotNone(client.id)
-        self.assertIsNotNone(grant.id)
+        self.assertIsNotNone(client2.id)
         self.assertIsNotNone(token.id)
-        self.assertIsNotNone(grant.client)
+        self.assertIsNotNone(token2.id)
 
         # Verify the token properties
         self.assertIsNotNone(token.client)
@@ -264,14 +272,12 @@ class BaseTestCaseWithData(BaseTestCase):
 
         client = OauthClientEntity.get_by_id(1)
         client2 = OauthClientEntity.query.filter_by(client_id='client_1').one()
-        grant = OauthGrantCodeEntity.get_by_id(1)
         role = OauthUserRoleEntity.get_by_id(1)
 
         self.assertIsNotNone(client)
         self.assertIsNotNone(client2)
-        self.assertIsNotNone(grant)
         self.assertIsNotNone(role)
         verbose("Expect client: {}".format(client))
-        verbose("Expect grant: {}".format(grant))
         verbose("Expect token: {}".format(token))
         verbose("Expect token serialized: {}".format(token.serialize()))
+        verbose("Expect token2 serialized: {}".format(token2.serialize()))
