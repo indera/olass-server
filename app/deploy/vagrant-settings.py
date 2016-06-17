@@ -21,4 +21,4 @@ DB_NAME = 'olass'
 SERVER_SSL_KEY_FILE = 'ssl/server.key'
 SERVER_SSL_CRT_FILE = 'ssl/server.crt'
 
-APP_VERSION = '0.0.1'
+APP_VERSION = '0.0.2'
