@@ -5,57 +5,99 @@ Authors:
     Andrei Sura <sura.andrei@gmail.com>
 
 """
-
 from mock import patch
 from base_test_with_data import BaseTestCaseWithData
 from olass.main import app
 from olass import utils
 
-
 login_url = 'https://localhost/'
+
+# The route for requesting access tokens
 token_request_url = 'https://localhost/oauth/token'
+
+# The route for saving chunks
+save_patient_chunks_url = 'https://localhost/api/save'
+
+token_request_data_expired = {
+    'client_id': 'client_2',
+    'client_secret': 'secret_2',
+    'grant_type': 'client_credentials'
+}
+
+token_request_data_ok = {
+    'client_id': 'client_1',
+    'client_secret': 'secret_1',
+    'grant_type': 'client_credentials'
+}
+
+chunks = """
+{
+"data": {
+   "1": {
+       "1": "b2cdaea3d7c9891b2ed94d1973fe5085183e4bb4bd87b672e066a456ee67bd38"
+       },
+
+   "2": {
+       "1": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7",
+       "2": "1dcce10470c0ea73a8a6287f69f4f862c5e13faea7c11104fae07dbc8d5ce56e"
+       },
+   "3": {
+       "1": "995b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"
+       }
+   }
+}
+"""
+
+# Example of output json:
+out = """
+{
+    "data": {
+        "1": {
+            "uuid": "ebd9ae1a1ba011e694c84d46767d11db"
+        },
+        "2": {
+            "uuid": "ebd9b9d21ba011e694c84d46767d11db"
+        }
+    },
+    "status": "success"
+}
+"""
 
 
 class TestIntegration(BaseTestCaseWithData):
 
-    @patch.multiple(utils, get_uuid_hex=BaseTestCaseWithData.dummy_get_uuid_hex)
-    def test_success(self):
-
-        token_request_data_ok = {
-            'client_id': 'client_1',
-            'client_secret': 'secret_1',
-            'grant_type': 'client_credentials'
-        }
-
-        # The route for saving chunks
-        save_patient_chunks_url = 'https://localhost/api/save'
-
-        chunks = """
-{
-  "partner_code": "UF",
-  "data": {
-"1":
-   [{"chunk_num": "1",
-   "chunk": "b2cdaea3d7c9891b2ed94d1973fe5085183e4bb4bd87b672e066a456ee67bd38"}
-   ],
-"2":
-   [{"chunk_num": "1",
-   "chunk": "345b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"},
-   {"chunk_num": "2",
-   "chunk": "1dcce10470c0ea73a8a6287f69f4f862c5e13faea7c11104fae07dbc8d5ce56e"}
-   ],
-"3":
-   [{"chunk_num": "1",
-   "chunk": "995b192ae4093dcbc5c914bdcb5e8c41e58162475a295c88b1ce594bd3dd78f7"}
-   ]
-}
-}
+    def test_get_expired_token(self):
+        """
 
         """
         with self.app.test_request_context():
             with app.test_client() as client:
+                response = client.post(token_request_url,
+                                       data=token_request_data_expired)
+                access_token = response.json.get('access_token')
+                # Now use the retrieved access token
+                auth_headers = [
+                    ('Authorization', "Basic: {}".format(access_token)),
+                    ('Content-Type', 'application/json')]
 
-                # print("\n Request access from: {}" .format(token_request_url))
+                response = client.post(save_patient_chunks_url,
+                                       data='{"data2": ""}',
+                                       headers=auth_headers)
+                self.assert401(response, "Response code is not 401")
+                self.assertEqual('401 UNAUTHORIZED', response.status)
+
+                # Verify that a new code was generated on the second request
+                response = client.post(token_request_url,
+                                       data=token_request_data_expired)
+                self.assert200(response, "Response code is not 200")
+
+    @patch.multiple(utils,
+                    get_uuid_bin=BaseTestCaseWithData.dummy_get_uuid_bin)
+    def test_success(self):
+
+        with self.app.test_request_context():
+            with app.test_client() as client:
+                # print("\n Request access from:{}" .format(token_request_url))
                 response = client.post(token_request_url,
                                        data=token_request_data_ok)
                 access_token = response.json.get('access_token')
@@ -77,7 +119,7 @@ class TestIntegration(BaseTestCaseWithData):
                 # Test_2 KeyError 'data'
                 with self.assertRaises(Exception):
                     bad_response = client.post(save_patient_chunks_url,
-                                               data='{"partner_code": "UF"}',
+                                               data='{"data2": ""}',
                                                headers=auth_headers)
 
                 # Test_3 valid request
@@ -99,16 +141,15 @@ class TestIntegration(BaseTestCaseWithData):
                     # base_test_with_data#dummy_get_uuid_hex()
                     self.assertEqual(
                         group_1.get('uuid'),
-                        '709949141ba811e69454f45c898e9b67')
+                        '409949141ba811e69454f45c898e9b67')
 
                     self.assertEqual(
                         group_2.get('uuid'),
-                        '809949141ba811e69454f45c898e9b67')
+                        '509949141ba811e69454f45c898e9b67')
 
                     self.assertEqual(
                         group_3.get('uuid'),
-                        '109949141ba811e69454f45c898e9b67')
-
+                        '709949141ba811e69454f45c898e9b67')
                 else:
                     self.fail("Error response: {}".format(data))
 

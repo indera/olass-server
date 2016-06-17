@@ -1,3 +1,3 @@
 # About
 
-This folder captiues the evolution of the database.
+This folder captures the evolution of the database.

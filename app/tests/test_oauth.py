@@ -28,17 +28,20 @@ class TestOauth(BaseTestCaseWithData):
                 self.assert401(response)
                 self.assertEqual('401 UNAUTHORIZED', response.status)
 
-    def test_request_token_fail(self):
+    def test_request_token_no_secret(self):
+        """
+        Verify that not specifying a `client_secret`
+        results in a `401 Unauthorized` response
+        """
         token_request_data_fail = {
             'client_id': 'client_1',
             'client_secret': '',
+            'grant_type': 'client_credentials'
         }
 
         with self.app.test_request_context():
             with app.test_client() as client:
 
-                # verify that not specifying a `client_secret`
-                # results in a `401 Unauthorized` response
                 with self.assertRaises(Exception):
                     response_fail = client.post(token_request_url,
                                                 data=token_request_data_fail)

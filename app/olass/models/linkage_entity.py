@@ -22,6 +22,7 @@ from olass.main import db
 +------------------+---------------------+------+-----+---------+
 """
 
+
 class LinkageEntity(db.Model, CRUDMixin):
 
     """ Maps the UUIDs to "hashed chunks" """
@@ -51,7 +52,8 @@ class LinkageEntity(db.Model, CRUDMixin):
             return {
                 'id': entity.id,
                 'partner_code': entity.partner.partner_code,
-                'added_at': entity.date_time.strftime(utils.FORMAT_US_DATE_TIME)
+                'added_at': entity.date_time.strftime(
+                    utils.FORMAT_US_DATE_TIME)
             }
 
         pagination = LinkageEntity.query.paginate(page_num, per_page, False)
@@ -59,17 +61,16 @@ class LinkageEntity(db.Model, CRUDMixin):
         return items, pagination.pages
 
     def friendly_uuid(self):
-        return binascii.hexlify(self.linkage_uuid).decode()
+        return utils.hexlify(self.linkage_uuid)
 
     def friendly_hash(self):
-        return binascii.hexlify(self.linkage_hash).decode()
+        return utils.hexlify(self.linkage_hash)
 
     @staticmethod
     def get_chunks_cache(chunks):
         """
         From the list [x, y, z] of chunks return
-        a dictionary like:
-
+        a dictionary which tells if a chunk was `linked` or not:
             {x: LinkageEntity, y: LinkageEntity, z: None}
         """
         bin_chunks = [binascii.unhexlify(chunk.encode('utf-8'))

@@ -5,45 +5,31 @@ Goal: store functions used in tasks.py
     Andrei Sura <sura.andrei@gmail.com>
 
 """
-
 import os
 import sys
 from invoke import run
 
 
-def get_db_name():
+def get_db_name(ctx):
     cmd = "grep -i 'create database' schema/000/upgrade.sql " \
         " | cut -d ' ' -f3 | tr -d  ';'"
 
     try:
-        result = run(cmd, hide=True)
+        result = ctx.run(cmd, hide=True)
         return result.stdout.strip()
     except Exception as exc:
         print("Failed to run [{}] due: {}".format(cmd, exc))
 
 
-def check_db_exists(db_name):
+def check_db_exists(ctx, db_name):
     cmd = "echo 'select count(*) from information_schema.SCHEMATA " \
           "WHERE SCHEMA_NAME = \"{}\"' | mysql -uroot " \
           "| sort | head -1".format(db_name)
     try:
-        result = run(cmd, hide=True)
+        result = ctx.run(cmd, hide=True)
         return result.stdout.strip() == '1'
     except Exception as exc:
         print("Failed to run [{}] due: {}".format(cmd, exc))
-
-
-def get_dir_for_prefix(prefix):
-    """
-    Add the current username as a sub-folder to the specified 'prefix' folder
-    """
-    result = run('whoami', hide='stdout')
-    suffix = result.stdout.strip() if result.ok else 'whoami'
-    path = os.path.join(prefix, suffix)
-
-    if not os.path.isdir(path):
-        sys.exit("Do you really intend to use path [{}]?".format(path))
-    return path
 
 
 def ask_yes_no(question, default="y"):

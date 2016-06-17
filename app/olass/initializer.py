@@ -4,14 +4,11 @@ Goal: Load settings, configure logging, load application routing
 @authors:
   Andrei Sura <sura.andrei@gmail.com>
 """
-
 import config
 import os
 import sys
 import ssl
 import logging
-# from logging import Formatter
-# from logging.handlers import RotatingFileHandler
 
 
 def _load_confidential_settings(app):
@@ -40,19 +37,6 @@ def _load_confidential_settings(app):
         sys.exit(err)
 
 
-def _check_config(app):
-    """
-    @TODO: remove if unused
-    """
-    required_dirs = []
-
-    for directory in required_dirs:
-        if not os.access(directory, os.R_OK):
-            sys.exit(
-                "Please check if '{}' dir exists and it is accessible"
-                .format(directory))
-
-
 def do_init(app, mode=config.MODE_PROD, extra_settings={}):
     """
     Initialize the app.
@@ -60,7 +44,6 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
     :rtype Flask
     :return the initialized application object
     """
-
     if mode == config.MODE_PROD:
         app.config.from_object(config.DefaultConfig)
         print("Loaded config.DefaultConfig")
@@ -73,7 +56,6 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
 
     _configure_logging(app)
     _load_confidential_settings(app)
-    _check_config(app)
 
     # When running unit tests we use in-memory sqlite
     if mode == config.MODE_TEST:
@@ -101,9 +83,9 @@ def do_init(app, mode=config.MODE_PROD, extra_settings={}):
         app.config.update(extra_settings)
 
     # load routes
-    from .routes import api
-    from .routes import index
-    from .routes import oauth
+    from .routes import api  # NOQA
+    from .routes import index  # NOQA
+    from .routes import oauth  # NOQA
 
     if app.debug and app.config['DEBUG_TB_ENABLED'] and not app.testing:
         # When runing tests there is no need for the debugtoolbar
@@ -120,11 +102,6 @@ def _configure_logging(app):
     log_level = app.config['LOG_LEVEL']
     app.logger.setLevel(log_level)
     app.logger.addHandler(logging.StreamHandler(sys.stdout))
-    # handler = logging.StreamHandler()
-    # handler = RotatingFileHandler('olass.log', maxBytes=99000, backupCount=1)
-    # fmt = Formatter('%(asctime)s %(levelname)s: '
-    #                 '%(message)s [%(filename)s +%(lineno)d]')
-    # handler.setFormatter(fmt)
 
     alog = logging.getLogger('oauthlib')
     alog.addHandler(logging.StreamHandler(sys.stdout))
@@ -154,7 +131,7 @@ def get_config_summary(app):
     return data
 
 
-def get_ssl_context(app):
+def get_ssl_context(app):  # pragma: no cover
     """
     Get a SSL context in debug mode if the developer does not provide the
     public/private key files for the certificate.

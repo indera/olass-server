@@ -25,6 +25,7 @@ from olass.main import app, db  # mail
 from olass import initializer
 from config import MODE_TEST
 
+
 class BaseTestCase(TestCase):
 
     """ Base class for all tests"""
@@ -32,6 +33,7 @@ class BaseTestCase(TestCase):
     def create_app(self):
         """ override the default config with the test config """
         initializer.do_init(app, MODE_TEST)
+        print(initializer.get_config_summary(app))
         # mail.init_app(app)
         return app
 

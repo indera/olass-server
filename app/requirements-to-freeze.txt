@@ -1,11 +1,11 @@
 
-Flask==0.11
+Flask==0.11.1
 Flask-DebugToolbar==0.10.0
 Flask-Login==0.3.2
 Flask-OAuthlib==0.9.3
 Flask-Principal==0.4.0
 Flask-SQLAlchemy==2.1
-Flask-Testing==0.4.2
+Flask-Testing==0.5.0
 
 # @see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html
 PyMySQL==0.7.4
@@ -20,5 +20,4 @@ pytest-cov==2.2.1
 pytz==2016.4
 
 # utility functions in tasks.py 
-colorama==0.3.7
-invoke==0.12.2
+invoke==0.13.0
