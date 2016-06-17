@@ -70,8 +70,7 @@ class LinkageEntity(db.Model, CRUDMixin):
     def get_chunks_cache(chunks):
         """
         From the list [x, y, z] of chunks return
-        a dictionary like:
-
+        a dictionary which tells if a chunk was `linked` or not:
             {x: LinkageEntity, y: LinkageEntity, z: None}
         """
         bin_chunks = [binascii.unhexlify(chunk.encode('utf-8'))

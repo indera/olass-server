@@ -88,47 +88,43 @@ select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
         log.error(err)
         return utils.jsonify_error(err)
 
-    # log.debug("call api_save_patient_hashes() "
-    #           "from partner_code [{}] for [{}] patients"
-    #           .format(json['partner_code'], len(json['data'].keys())))
-
     result = collections.defaultdict(dict)
     json_data = json['data']
 
-    # init the response dictionary
-    for pat_id, pat_chunks in json_data.items():
-        chunks = [chunk for chunk_num, chunk in pat_chunks.items()]
-        result[pat_id] = dict.fromkeys(chunks)
-
     # patient chunks are received in groups
     for pat_id, pat_chunks in json_data.items():
-        chunks = [chunk for chunk_num, chunk in pat_chunks.items()]
+        # Since there is a chance of duplicate chunks find uniques
+        chunks = list(set(chunk for chunk_num, chunk in pat_chunks.items()))
         chunks_cache = LinkageEntity.get_chunks_cache(chunks)
         uuids = LinkageEntity.get_distinct_uuids_for_chunks(chunks_cache)
         log.debug("Found [{}] matching uuids from [{}] chunks of patient "
                   "[{}]".format(len(uuids), len(chunks), pat_id))
 
-        # Since ther is a chance of duplicate chunks find uniques
-        unique_chunks = set(pat_chunks.values())
         added_date = utils.get_db_friendly_date_time()
 
         if len(uuids) == 0:
-            # log.debug("generate new uuid for pat_id [{}]".format(pat_id))
             binary_uuid = utils.get_uuid_bin()
             hex_uuid = utils.hexlify(binary_uuid)
+            log.debug("Generate [{}] for pat_id[{}]".format(pat_id, hex_uuid))
         elif len(uuids) == 1:
             hex_uuid = uuids.pop()
             binary_uuid = unhexlify(hex_uuid.encode('utf-8'))
-            log.debug("Reusing the uuid [{}]".format(hex_uuid))
+            log.debug("Reuse [{}] for pat_id[{}]".format(pat_id, hex_uuid))
         else:
-            log.error("It looks like we got a collision!")
-            log.error("==> chunks: {}".format(chunks))
-            log.error("==> uuids: {}".format(uuids))
+            log.error("Oops...It looks like we got a collision!"
+                      "\n==> chunks: {}\n==> uuids: {}".format(chunks, uuids))
             raise Exception("More than one uuid for chunks attributed to "
                             "[{}] patient [{}]"
                             .format(partner.partner_code, pat_id))
 
-        for i, chunk in enumerate(unique_chunks):
+        # update the response json
+        result[pat_id] = {"uuid": hex_uuid}
+
+        for i, chunk in enumerate(chunks):
+            if chunks_cache.get(chunk):
+                log.debug("Skip chunk [{}] - already linked".format(chunk))
+                continue
+
             # link every chunk to the same uuid
             binary_hash = unhexlify(chunk.encode('utf-8'))
             LinkageEntity.create(
@@ -137,8 +133,5 @@ select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
                 linkage_hash=binary_hash,
                 linkage_addded_at=added_date)
             log.debug("Created link [{}] for [{}]".format(i, chunk))
-
-            # update the response json
-            result[pat_id] = {"uuid": hex_uuid}
 
     return utils.jsonify_success(result)
