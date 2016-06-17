@@ -100,69 +100,45 @@ select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
         chunks = [chunk for chunk_num, chunk in pat_chunks.items()]
         result[pat_id] = dict.fromkeys(chunks)
 
-    # for chunk_data in pat_chunks:
-    #     chunk = chunk_data['chunk']
-    #
-    #     # validate the input
-    #     if len(chunk) != 64:
-    #         log.warning("Skip chunk for patient [{}] with length: {}"
-    #                     .format(pat_id, len(chunk)))
-    #         continue
-
     # patient chunks are received in groups
     for pat_id, pat_chunks in json_data.items():
         chunks = [chunk for chunk_num, chunk in pat_chunks.items()]
         chunks_cache = LinkageEntity.get_chunks_cache(chunks)
         uuids = LinkageEntity.get_distinct_uuids_for_chunks(chunks_cache)
-        # log.debug("Found [{}] matching uuids from [{}] chunks of patient "
-        #          "[{}]".format(len(uuids), len(chunks), pat_id))
+        log.debug("Found [{}] matching uuids from [{}] chunks of patient "
+                  "[{}]".format(len(uuids), len(chunks), pat_id))
+
+        # Since ther is a chance of duplicate chunks find uniques
+        unique_chunks = set(pat_chunks.values())
+        added_date = utils.get_db_friendly_date_time()
 
         if len(uuids) == 0:
             # log.debug("generate new uuid for pat_id [{}]".format(pat_id))
-            binary_uuid = utils.get_uuid_hex()
-
-            link = None
-
-            for chunk_num, chunk in pat_chunks.items():
-                # link every chunk to the same uuid
-                added_date = utils.get_db_friendly_date_time()
-                binary_hash = unhexlify(chunk.encode('utf-8'))
-
-                link = LinkageEntity.create(
-                    partner_id=partner.id,
-                    linkage_uuid=binary_uuid,
-                    linkage_hash=binary_hash,
-                    linkage_addded_at=added_date)
-                log.debug("Created link for chunk_num: {}".format(chunk_num))
-            # update the response json
-            result[pat_id] = {"uuid": link.friendly_uuid()}
-
+            binary_uuid = utils.get_uuid_bin()
+            hex_uuid = utils.hexlify(binary_uuid)
         elif len(uuids) == 1:
-            uuid = uuids.pop()
-            # log.debug("Reusing the uuid [{}]".format(uuid))
-
-            link = None
-
-            for chunk_num, chunk in pat_chunks.items():
-                # link every chunk to the same uuid
-                binary_hash = unhexlify(chunk.encode('utf-8'))
-                binary_uuid = unhexlify(uuid.encode('utf-8'))
-                link = chunks_cache.get(chunk)
-
-                if not link:
-                    log.info("Attempt to insert for hash [{}]".format(chunk))
-                    added_date = utils.get_db_friendly_date_time()
-                    link = LinkageEntity.create(
-                        partner_id=partner.id,
-                        linkage_uuid=binary_uuid,
-                        linkage_hash=binary_hash,
-                        linkage_addded_at=added_date)
-            result[pat_id] = {"uuid": link.friendly_uuid()}
-
+            hex_uuid = uuids.pop()
+            binary_uuid = unhexlify(hex_uuid.encode('utf-8'))
+            log.debug("Reusing the uuid [{}]".format(hex_uuid))
         else:
-            log.error("It looks like we got a collision for chunks: {}"
-                      .format(chunks, uuids))
-            raise Exception("More than one uuid for chunks attributed to"
-                            "[{}] patient [{}]".format(partner.id, pat_id))
+            log.error("It looks like we got a collision!")
+            log.error("==> chunks: {}".format(chunks))
+            log.error("==> uuids: {}".format(uuids))
+            raise Exception("More than one uuid for chunks attributed to "
+                            "[{}] patient [{}]"
+                            .format(partner.partner_code, pat_id))
+
+        for i, chunk in enumerate(unique_chunks):
+            # link every chunk to the same uuid
+            binary_hash = unhexlify(chunk.encode('utf-8'))
+            LinkageEntity.create(
+                partner_id=partner.id,
+                linkage_uuid=binary_uuid,
+                linkage_hash=binary_hash,
+                linkage_addded_at=added_date)
+            log.debug("Created link [{}] for [{}]".format(i, chunk))
+
+            # update the response json
+            result[pat_id] = {"uuid": hex_uuid}
 
     return utils.jsonify_success(result)

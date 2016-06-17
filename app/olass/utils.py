@@ -9,6 +9,7 @@ import uuid
 import sys
 import unicodedata
 import functools
+import binascii
 # import hmac
 # import base64
 import pytz as tz
@@ -66,7 +67,14 @@ def prepare_for_hashing(text):
     return text.translate(tbl).lower()
 
 
-def get_uuid_hex(uuid_text=None):
+def hexlify(val):
+    return binascii.hexlify(val).decode()
+
+
+def get_uuid_bin(uuid_text=None):
+    """
+    Note: the returned value needs to be hexlified to be human readable
+    """
     if not uuid_text:
         uuid_text = uuid.uuid1()
     return unhexlify(str(uuid_text).replace('-', '').lower().encode())
