@@ -33,8 +33,8 @@ class LinkageEntity(db.Model, CRUDMixin):
                            db.ForeignKey('partner.partner_id'), nullable=False)
     linkage_uuid = db.Column('linkage_uuid', db.Binary, nullable=False)
     linkage_hash = db.Column('linkage_hash', db.Binary, nullable=False)
-    linkage_addded_at = db.Column('linkage_added_at', db.DateTime,
-                                  nullable=False)
+    linkage_added_at = db.Column('linkage_added_at', db.DateTime,
+                                 nullable=False)
 
     # @OneToOne
     partner = db.relationship(PartnerEntity, uselist=False, lazy='joined')

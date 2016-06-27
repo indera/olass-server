@@ -133,7 +133,7 @@ select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
                 partner_id=partner.id,
                 linkage_uuid=binary_uuid,
                 linkage_hash=binary_hash,
-                linkage_addded_at=added_date)
+                linkage_added_at=added_date)
             log.debug("Created link [{}] for [{}]".format(i, chunk))
 
     return utils.jsonify_success(result)

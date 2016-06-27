@@ -162,7 +162,7 @@ class BaseTestCaseWithData(BaseTestCase):
                     partner_id=partner.id,
                     linkage_uuid=pers_uuid,
                     linkage_hash=ahash,
-                    linkage_addded_at=added_date)
+                    linkage_added_at=added_date)
                 self.assertIsNotNone(link)
 
                 links_by_hash = LinkageEntity.query.filter_by(
