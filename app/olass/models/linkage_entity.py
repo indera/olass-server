@@ -93,15 +93,11 @@ class LinkageEntity(db.Model, CRUDMixin):
             x => uuid_1
             y => uuid_1
             z => uuid_2
-
+        :rtype set:
+        :return the mapping status of each chunk
         """
-        result = set()
-
-        for link in chunks_cache.values():
-            if link:
-                result.add(link.friendly_uuid())
-
-        return result
+        return set(link.friendly_uuid() for link in chunks_cache.values()
+                   if link)
 
     def __repr__(self):
         """ Return a friendly object representation """

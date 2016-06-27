@@ -106,17 +106,19 @@ select hex(linkage_uuid), hex(linkage_hash) from linkage order by linkage_id;
             binary_uuid = utils.get_uuid_bin()
             hex_uuid = utils.hexlify(binary_uuid)
             log.debug("Generate [{}] for pat_id[{}]".format(pat_id, hex_uuid))
-        elif len(uuids) == 1:
+        elif len(uuids) >= 1:
             hex_uuid = uuids.pop()
             binary_uuid = unhexlify(hex_uuid.encode('utf-8'))
-            log.debug("Reuse [{}] for pat_id[{}]".format(pat_id, hex_uuid))
-        else:
-            log.error("Oops...It looks like we got a collision!"
-                      "\n==> chunks: {}\n==> uuids: {}".format(chunks, uuids))
-            raise Exception("More than one uuid for chunks attributed to "
+
+            # after pop() the list with one item is empty
+            if not uuids:
+                log.debug("Reuse [{}] for pat_id[{}]".format(pat_id, hex_uuid))
+            else:
+                log.warning("More than one uuid for chunks attributed to "
                             "[{}] patient [{}]"
                             .format(partner.partner_code, pat_id))
-
+                log.warning("\n==>chunks: {}\n==> uuids: {}"
+                            .format(chunks, uuids))
         # update the response json
         result[pat_id] = {"uuid": hex_uuid}
 
