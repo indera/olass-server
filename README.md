@@ -1,4 +1,4 @@
-# OLASS (OneFlorida Linkage S? S?)
+# OLASS (OneFlorida Linkage Submission System)
 
 ## Introduction
 
@@ -23,4 +23,8 @@ This software is distributed under ... @TODO
 
 ## Contributors
 
-Add as we go...
+The application was designed and implemented by Andrei Sura with tremendous
+support, fedback and contributions from the
+[BMI team](https://github.com/orgs/ufbmi/people).
+
+For the complete list of contributors please see [AUTHORS.md](AUTHORS.md)

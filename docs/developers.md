@@ -2,14 +2,14 @@
 
 ## Introduction
 
-The preliminary data flow diagram:
+The data flow diagram:
 
 <pre>
 +------+                                                                                 ________
 |  O   |            +------------+            +-------+     +-------+                  /__________\
 | ---  |    SSL     | RedHat 7.0 |   unix     |       |     |       |   sha256 IDs    |            |
 |  |   |  --------> |   Nginx    | ---------> | uWSGI | --> | Flask | < =========== > |  1FL-DB    |
-| / \  |   OAuth2   +------------+  socket    |       |     |  App  |    1FL-UUID     |  MySQL?    |
+| / \  |   OAuth2   +------------+  socket    |       |     |  App  |    1FL-UUID     |  MySQL     |
 --------                                      +-------+     +-------+                 |            |
 |  PS  |                                                                               \__________/
 +------+
@@ -39,7 +39,6 @@ Legend:
 
 ## Install webserver and supervisor
     $ sudo yum install nginx supervisor.noarch
-
     $ sudo yum install python-pip.noarch python-flake8.noarch pylint.noarch
     $ sudo pip install --upgrade pip
     $ sudo pip install virtualenv virtualenvwrapper
